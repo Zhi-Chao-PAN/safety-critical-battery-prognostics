@@ -1,0 +1,37 @@
+# config/schema.yaml
+
+dataset:
+  path: data/processed/housing_with_spatial_clusters.csv
+
+target:
+  name: price
+
+group:
+  name: spatial_cluster
+
+features:
+  numeric:
+    - median_income
+    - house_age
+    - avg_rooms
+    - avg_bedrooms
+    - population
+    - latitude
+    - longitude
+
+modeling:
+  standardize:
+    - median_income
+    - price
+
+bayesian:
+  pooled:
+    slope: median_income
+
+
+  hierarchical:
+    slope: 
+      - median_income
+      - house_age
+      - avg_rooms
+    group: spatial_cluster

@@ -1,0 +1,14 @@
+{
+  "data": {
+    "processed_path": "data/processed/housing.csv",
+    "target": "price"
+  },
+  "model": {
+    "name": "ridge",
+    "alpha": 0.1
+  },
+  "split": {
+    "test_size": 0.15,
+    "val_size": 0.15
+  }
+}

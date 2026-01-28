@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Pan"
+  given-names: "Zhichao"
+title: "Spatially-Aware Bayesian Machine Learning for Housing Price Prediction"
+version: 1.0.0
+date-released: 2026-01-27
+url: "https://github.com/PanZhiChao666/spatial-bayes-vs-deep"
+keywords:
+  - bayesian-inference
+  - spatial-statistics
+  - deep-learning
+  - pytorch
+  - pymc
+license: MIT

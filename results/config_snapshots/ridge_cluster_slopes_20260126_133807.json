@@ -1,0 +1,14 @@
+{
+  "data": {
+    "processed_path": "data/processed/housing_with_spatial_clusters.csv",
+    "target": "price"
+  },
+  "model": {
+    "name": "ridge",
+    "alpha": 1.0
+  },
+  "split": {
+    "test_size": 0.15,
+    "val_size": 0.15
+  }
+}
