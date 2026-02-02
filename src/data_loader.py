@@ -14,6 +14,7 @@ class BatteryDataLoader:
         self.rated_capacity = rated_capacity
 
     def load_data(self, battery_ids: List[str] = ['B0005', 'B0006', 'B0007', 'B0018']) -> pd.DataFrame:
+        # Fallback to synthetic data if directory is empty or missing
         if not os.path.exists(self.data_dir) or not any(f.endswith('.mat') for f in os.listdir(self.data_dir)):
             print(f"Warning: {self.data_dir} empty. Generating SYNTHETIC physics-based data for demo.")
             return self._generate_synthetic_data(battery_ids)
@@ -58,7 +59,7 @@ class BatteryDataLoader:
         return pd.concat(df_list, ignore_index=True)
 
     def _generate_synthetic_data(self, battery_ids):
-        # Physics-informed synthetic data: Capacity decays exponentially
+        # Physics-informed synthetic data: Capacity decays exponentially with random noise
         data = []
         for bat_id in battery_ids:
             n = 200

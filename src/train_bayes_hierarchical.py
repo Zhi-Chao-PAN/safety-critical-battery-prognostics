@@ -10,15 +10,14 @@ def train():
     loader = BatteryDataLoader()
     df = loader.load_data()
     
-    # 1. Feature Engineering
-    # Normalize features for MCMC stability
+    # 1. Feature Engineering (Standardization)
     X_cols = ['discharge_time', 'max_temp']
     X = df[X_cols].values
     X_mean, X_std = X.mean(axis=0), X.std(axis=0)
     X_scaled = (X - X_mean) / X_std
     y = df['rul'].values
 
-    # 2. Hierarchical Grouping
+    # 2. Hierarchical Grouping by Battery ID
     battery_ids = df['battery_id'].unique()
     battery_idx = pd.Categorical(df['battery_id'], categories=battery_ids).codes
     coords = {'battery_id': battery_ids, 'features': X_cols}
@@ -26,7 +25,7 @@ def train():
     print(f"Training Hierarchical Bayesian Model on {len(df)} cycles...")
     
     with pm.Model(coords=coords) as model:
-        # Data Containers (Mutable for future inference)
+        # Mutable Data Containers
         X_data = pm.Data("X_data", X_scaled)
         battery_idx_data = pm.Data("battery_idx", battery_idx)
         
@@ -49,8 +48,7 @@ def train():
         # Likelihood
         rul_obs = pm.Normal("rul_obs", mu=mu, sigma=sigma, observed=y)
         
-        # Sampling
-        # Using 2 chains for demo speed, increase to 4 for rigorous paper
+        # Sampling (MCMC)
         trace = pm.sample(500, tune=500, chains=2, cores=1, target_accept=0.9)
         
         save_path = "results/bayes_hierarchical"
