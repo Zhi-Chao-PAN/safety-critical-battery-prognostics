@@ -2,7 +2,7 @@
 **A Comparative Study of Deep Learning and Hierarchical Bayesian Inference**
 
 <p style="text-align: center; font-size: 14pt; margin-top: -20px;">
-    <strong>Author: Zhichao Pan (潘志超)</strong>
+    <strong>Zhichao Pan</strong>
 </p>
 
 ## Abstract
