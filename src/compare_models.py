@@ -1,175 +1,96 @@
-# src/compare_models.py
+
 import torch
-import arviz as az
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
+import yaml
 from pathlib import Path
-from sklearn.preprocessing import StandardScaler
-
-from src.utils.schema import load_schema
-from src.data_loader import load_battery_data
+from src.data_loader import BatteryDataLoader
 from src.models.lstm_model import BatteryLSTM
-from src.train_nn_baseline import create_sequences
 
-def compare_predictions(battery_id=None):
-    schema = load_schema()
-    data_path = schema["dataset"]["path"]
-    features = schema["features"]["numeric"]
-    target = schema["target"]["name"]
-    group_col = schema["group"]["name"]
-    seq_length = 30
-    
-    print(f"Loading data for comparison from {data_path}...")
-    df = load_battery_data(data_path)
-    
-    # 1. Select Battery
-    if battery_id is None:
-        # Default to the last one (test set usually)
-        battery_id = df[group_col].unique()[-1]
-    
-    print(f"Visualizing Battery: {battery_id}")
-    battery_df = df[df[group_col] == battery_id].copy()
-    
-    if len(battery_df) <= seq_length:
-        print("Not enough data for this battery.")
-        return
+def load_config(config_path="experiments/baseline.yaml"):
+    with open(config_path, "r") as f:
+        return yaml.safe_load(f)
 
-    # 2. Prepare Data (Standardization + Sequences)
-    # Note: Ideally we use the scaler fitted on training data. 
-    # For this demo, we refit on the whole dataset or just this battery (approximation).
-    # To be rigorous, we should load the scaler. 
-    # Let's fit on the whole DF for consistency with train_nn_baseline logic
-    scaler_x = StandardScaler()
-    df[features] = scaler_x.fit_transform(df[features])
+def create_sequences_for_inference(df, seq_length, features):
+    data_values = df[features].values
+    X = []
+    if len(df) <= seq_length:
+        return np.array([])
+        
+    for i in range(len(df) - seq_length):
+        X.append(data_values[i : i + seq_length])
+        
+    return np.array(X)
+
+def compare_models():
+    config = load_config()
+    battery_ids = config['data']['batteries']
+    test_battery = battery_ids[-1] # B0018
     
-    # Now extract the specific battery data again from standardized df
-    battery_df_std = df[df[group_col] == battery_id]
+    print(f"Comparing models for Battery: {test_battery}")
     
-    X_seq, y_true = create_sequences(
-        battery_df_std, seq_length, features, target, group_col
+    # Load Data
+    loader = BatteryDataLoader()
+    df = loader.load_data(battery_ids)
+    
+    # Preprocessing (Need to mimic training stats - ideally load a scaler)
+    # For demo, we fit on all OTHER batteries to standardize the test battery
+    features = config['data']['features']
+    target = "rul"
+    
+    train_df = df[df['battery_id'] != test_battery]
+    test_df = df[df['battery_id'] == test_battery]
+    
+    mean = train_df[features].mean()
+    std = train_df[features].std()
+    
+    test_df_norm = test_df.copy()
+    test_df_norm[features] = (test_df_norm[features] - mean) / std
+    
+    # LSTM Inference
+    window_size = config['data']['window_size']
+    X_test = create_sequences_for_inference(test_df_norm, window_size, features)
+    X_test_t = torch.tensor(X_test, dtype=torch.float32)
+    
+    model = BatteryLSTM(
+        input_dim=len(features),
+        hidden_dim=config['model']['hidden_dim'],
+        num_layers=config['model']['num_layers'],
+        dropout=config['model']['dropout']
     )
     
-    # Convert to Tensor
-    X_seq_t = torch.tensor(X_seq, dtype=torch.float32)
-    
-    # 3. Load LSTM Model
     model_path = Path("results/nn_baseline/lstm_model.pth")
-    if not model_path.exists():
-        print(f"Error: LSTM model not found at {model_path}")
-        return
-
-    input_dim = len(features)
-    model = BatteryLSTM(input_dim=input_dim)
-    model.load_state_dict(torch.load(model_path))
-    model.eval()
-    
-    print("Generating LSTM predictions...")
-    with torch.no_grad():
-        lstm_pred = model(X_seq_t).numpy().flatten()
-    
-    # y_true from create_sequences is (N, 1), flatten it
-    y_true = y_true.flatten()
-    
-    # 4. Load Bayesian Trace (Simulated/Real)
-    trace_path = Path("results/bayes_hierarchical/trace_hierarchical.nc")
-    
-    bayes_mean = None
-    bayes_hdi = None
-    
-    if trace_path.exists():
-        print("Loading Bayesian Trace...")
-        try:
-            # Real PPC logic would go here if we implemented sample_posterior_predictive
-            # For this demo, detailed instructions asked for a specific visual style
-            # utilizing the "Simulated Logic" if full PPC isn't available.
-            
-            # Use 'Simulated Logic' for visual demonstration as requested
-            # representing the Uncertainty widening
-            cycles = np.arange(len(lstm_pred))
-            bayes_mean = lstm_pred * 0.98  # Slightly different mean
-            
-            # Uncertainty grows as RUL decreases (approaching failure) or just with time
-            # RUL is high at start, low at end. 
-            # Usually uncertainty is higher when extrapolating, but here we are just predicting.
-            # Let's make uncertainty grow with time (cycles)
-            uncertainty_growth = np.linspace(5, 25, len(lstm_pred))
-            bayes_std = uncertainty_growth
-            
-            bayes_hdi = (bayes_mean - 1.96 * bayes_std, bayes_mean + 1.96 * bayes_std)
-            
-        except Exception as e:
-            print(f"Error processing trace: {e}")
+    if model_path.exists():
+        model.load_state_dict(torch.load(model_path))
+        model.eval()
+        with torch.no_grad():
+            lstm_preds = model(X_test_t).numpy().flatten()
     else:
-        print("Trace not found, skipping Bayesian overlay.")
+        print("LSTM model not found. Run training first.")
+        lstm_preds = np.zeros(len(X_test))
 
-    # 5. Plotting (The 'Killer Plot' - Publication Quality)
-    print("Plotting...")
+    # Ground Truth (aligned)
+    gt_rul = test_df['rul'].values[window_size:] 
     
-    # Style configuration
-    plt.rcParams.update({
-        'font.size': 14,
-        'axes.titlesize': 16,
-        'axes.labelsize': 14,
-        'xtick.labelsize': 12,
-        'ytick.labelsize': 12,
-        'legend.fontsize': 12,
-        'font.family': 'serif', # Academic standard
-        'figure.dpi': 300
-    })
-
-    fig, ax = plt.subplots(figsize=(10, 6))
+    # Load Bayesian Trace (Placeholder visualization logic from previous phase, simplified)
+    # NOTE: In a real standardized script, we would load the 'trace.nc' and predict.
+    # For this 'Clean' version, we focus on the Plotting hygiene.
     
-    # Align X-axis to actual cycle numbers (start from seq_length)
-    x_axis = np.arange(seq_length, seq_length + len(y_true))
+    # Basic Plot
+    plt.figure(figsize=(10, 6))
+    plt.plot(gt_rul, 'k-', label='Ground Truth')
+    plt.plot(lstm_preds, 'r--', label='LSTM Prediction')
     
-    # Ground Truth
-    ax.plot(x_axis, y_true, 'k-', label='Ground Truth', linewidth=2, alpha=0.8)
+    plt.title(f"RUL Prediction: {test_battery}")
+    plt.xlabel("Cycle (window offset)")
+    plt.ylabel("RUL")
+    plt.legend()
+    plt.grid(True)
     
-    # LSTM
-    ax.plot(x_axis, lstm_pred, 'r--', label='LSTM (Deterministic)', linewidth=2)
-    
-    # Bayesian
-    if bayes_mean is not None:
-        # Plot Mean if desired
-        ax.plot(x_axis, bayes_mean, 'g:', linewidth=2, label='Bayesian Mean')
-        
-        # Uncertainty Interval (HDI)
-        ax.fill_between(
-            x_axis, 
-            bayes_hdi[0], 
-            bayes_hdi[1], 
-            color='green', 
-            alpha=0.2, 
-            label='95% Uncertainty (Safety Buffer)'
-        )
-    
-    ax.set_title(f'Prognostics RUL Prediction: Battery {battery_id}', fontweight='bold')
-    ax.set_xlabel('Charge Cycle Index')
-    ax.set_ylabel('Remaining Useful Life (Cycles)')
-    ax.legend(loc='upper right', frameon=True, framealpha=0.9)
-    ax.grid(True, linestyle='--', alpha=0.4)
-    
-    # Highlight Failure Threshold (RUL=0)
-    ax.axhline(0, color='gray', linestyle='-', linewidth=0.5)
-    
-    # Annotations
-    if len(x_axis) > 50:
-        idx = int(len(x_axis) * 0.85)
-        # Avoid index error if simulated seq is shorter
-        if idx < len(lstm_pred):
-            # Annotate Uncertainty
-            if bayes_mean is not None:
-                ax.annotate('Quantified Risk', 
-                        xy=(x_axis[idx], bayes_hdi[1][idx]), 
-                        xytext=(x_axis[idx]-50, bayes_hdi[1][idx]+50),
-                        arrowprops=dict(facecolor='green', shrink=0.05, alpha=0.7),
-                        fontsize=11, color='green', fontweight='bold')
-
-    out_file = Path(f"results/comparison_{battery_id}_paper.png")
-    plt.tight_layout()
-    plt.savefig(out_file, dpi=300, bbox_inches='tight')
-    print(f"Publication-quality plot saved to {out_file}")
+    out_path = Path("results/final_comparison.png")
+    plt.savefig(out_path)
+    print(f"Saved comparison to {out_path}")
 
 if __name__ == "__main__":
-    compare_predictions()
+    compare_models()

@@ -1,10 +1,22 @@
+experiment:
+  name: "lstm_rul_prediction"
+  type: "deterministic"
+
 data:
-  processed_path: data/battery_data
-  target: RUL
+  source: "nasa_pcoe"
+  batteries: ["B0005", "B0006", "B0007", "B0018"]
+  features: ["discharge_time", "max_temp", "voltage_drop"]
+  window_size: 10
 
 model:
-  n_estimators: 200
+  architecture: "LSTM"
+  input_dim: 3
+  hidden_dim: 64
+  num_layers: 2
+  dropout: 0.2
 
-split:
-  test_size: 0.15   # 15% test
-  val_size: 0.15    # 15% validation
+training:
+  epochs: 100
+  batch_size: 32
+  learning_rate: 0.001
+  loss: "MSE"

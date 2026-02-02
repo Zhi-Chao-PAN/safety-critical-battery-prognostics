@@ -1,18 +1,14 @@
 cff-version: 1.2.0
-message: "If you use this software, please cite it as below."
+message: "If you use this software in your research, please cite it as below."
 authors:
-  - family-names: "Pan"
-    given-names: "Zhi-Chao"
-    orcid: "https://orcid.org/0000-0000-0000-0000"
-title: "Safety-Critical Battery Prognostics: Bayesian vs. Deterministic"
+- family-names: "Pan"
+  given-names: "Zhi-Chao"
+title: "Safety-Critical Battery Prognostics: Bayesian vs Deterministic Approaches"
 version: 1.0.0
 date-released: 2026-02-02
 url: "https://github.com/Zhi-Chao-PAN/spatial-bayes-vs-deep-learning"
-preferred-citation:
-  type: article
-  authors:
-  - family-names: "Pan"
-    given-names: "Zhi-Chao"
-  title: "Uncertainty Quantification in Battery Health Management: A Comparative Study"
-  year: 2026
-  journal: "arXiv preprint"
+keywords:
+  - "prognostics-health-management"
+  - "lithium-ion-batteries"
+  - "uncertainty-quantification"
+  - "bayesian-inference"
