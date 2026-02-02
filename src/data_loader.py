@@ -13,16 +13,38 @@ class BatteryDataLoader:
         self.data_dir = data_dir
         self.rated_capacity = rated_capacity
 
-    def load_data(self, battery_ids: List[str] = ['B0005', 'B0006', 'B0007', 'B0018']) -> pd.DataFrame:
-        # Fallback to synthetic data if directory is empty or missing
-        if not os.path.exists(self.data_dir) or not any(f.endswith('.mat') for f in os.listdir(self.data_dir)):
-            print(f"Warning: {self.data_dir} empty. Generating SYNTHETIC physics-based data for demo.")
-            return self._generate_synthetic_data(battery_ids)
+    def load_data(self, battery_ids: List[str] = ['B0005', 'B0006', 'B0007', 'B0018'], allow_synthetic: bool = False) -> pd.DataFrame:
+        """
+        Load and process battery data.
+        
+        Args:
+            battery_ids: List of battery IDs to load
+            allow_synthetic: If True, generate fake data when files are missing (NOT RECOMMENDED for production)
+            
+        Returns:
+            DataFrame with processed features
+            
+        Raises:
+            FileNotFoundError: If data files are missing and allow_synthetic is False
+        """
+        # Integrity Check
+        if not os.path.exists(self.data_dir) and not allow_synthetic:
+             raise FileNotFoundError(f"Data directory '{self.data_dir}' not found. Please download NASA PCoE dataset.")
 
         all_cycles = []
+        files_found = 0
+        
         for bat_id in battery_ids:
+            filepath = os.path.join(self.data_dir, f"{bat_id}.mat")
+            
+            if not os.path.exists(filepath):
+                 if allow_synthetic:
+                     continue
+                 else:
+                     raise FileNotFoundError(f"Battery file not found: {filepath}")
+            
+            files_found += 1
             try:
-                filepath = os.path.join(self.data_dir, f"{bat_id}.mat")
                 mat = scipy.io.loadmat(filepath)
                 cycles = mat[bat_id][0, 0]['cycle'][0]
                 
@@ -43,8 +65,18 @@ class BatteryDataLoader:
                             'max_temp': np.max(temp)
                         })
             except Exception as e:
-                print(f"Skipping {bat_id}: {e}")
+                print(f"Error processing {bat_id}: {e}")
                 
+        # Synthetic Fallback (Only if explicitly allowed and no files found)
+        if files_found == 0 and allow_synthetic:
+            print(f"Warning: No real data found in {self.data_dir}. Generating SYNTHETIC physics-based data for demo.")
+            return self._generate_synthetic_data(battery_ids)
+            
+        if not all_cycles:
+             if allow_synthetic:
+                 return self._generate_synthetic_data(battery_ids)
+             raise ValueError("No valid cycle data extracted from files.")
+
         return self._calculate_rul(pd.DataFrame(all_cycles))
 
     def _calculate_rul(self, df: pd.DataFrame) -> pd.DataFrame:

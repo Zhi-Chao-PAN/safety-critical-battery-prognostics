@@ -1,42 +1,144 @@
-
-import pandas as pd
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import yaml
+import logging
 from pathlib import Path
+from typing import Tuple, List, Optional, Dict, Any
 from src.data_loader import BatteryDataLoader
 from src.models.lstm_model import BatteryLSTM
+from src.utils.logger import setup_logger
 
-def load_config(config_path="experiments/baseline.yaml"):
-    with open(config_path, "r") as f:
-        return yaml.safe_load(f)
+logger = setup_logger(__name__)
 
-def create_sequences(df, seq_length, features, target):
-    X = []
-    y = []
+def load_config(config_path: str = "experiments/baseline.yaml") -> Dict[str, Any]:
+    """Load experiment configuration."""
+    try:
+        with open(config_path, "r") as f:
+            return yaml.safe_load(f)
+    except FileNotFoundError:
+        logger.error(f"Config file not found at {config_path}")
+        raise
+
+def create_sequences(df, seq_length: int, features: List[str], target: str) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Create sequences for LSTM using vectorized numpy striding.
     
-    # Group by battery_id to ensure sequences don't cross batteries
+    Args:
+        df: Input DataFrame
+        seq_length: Length of sequences
+        features: List of feature column names
+        target: Target column name
+        
+    Returns:
+        X: Sequence data (N, seq_length, num_features)
+        y: Target data (N, 1)
+    """
+    X_list, y_list = [], []
+    
+    # Process each battery separately to avoid cross-contamination
     for bat_id in df['battery_id'].unique():
         group = df[df['battery_id'] == bat_id].sort_values('cycle')
-        data_values = group[features].values
-        target_values = group[target].values
+        data_values = group[features].values.astype(np.float32)
+        target_values = group[target].values.astype(np.float32)
         
-        for i in range(len(group) - seq_length):
-            X.append(data_values[i : i + seq_length])
-            y.append(target_values[i + seq_length])
+        num_samples = len(group) - seq_length
+        if num_samples <= 0:
+            continue
             
-    return np.array(X), np.array(y)
+        # Vectorized striding
+        # X shape: (num_samples, seq_length, num_features)
+        # Create a view into the array with the given shape and strides
+        stride_0 = data_values.strides[0]
+        stride_1 = data_values.strides[1]
+        
+        X_bat = np.lib.stride_tricks.as_strided(
+            data_values,
+            shape=(num_samples, seq_length, len(features)),
+            strides=(stride_0, stride_0, stride_1)
+        )
+        
+        y_bat = target_values[seq_length:]
+        
+        X_list.append(X_bat)
+        y_list.append(y_bat)
+        
+    if not X_list:
+        return np.array([]), np.array([])
+        
+    return np.concatenate(X_list), np.concatenate(y_list)
 
-def train_lstm():
+def train_evaluate_lstm(
+    X_train: np.ndarray,
+    y_train: np.ndarray,
+    X_test: np.ndarray,
+    y_test: np.ndarray,
+    input_dim: int,
+    seq_length: int,
+    hidden_dim: int = 64,
+    num_layers: int = 2,
+    dropout: float = 0.2,
+    learning_rate: float = 0.001,
+    epochs: int = 100,
+    batch_size: int = 32,
+    device: str = "cpu",
+    verbose: bool = False
+) -> float:
+    """
+    Train LSTM and evaluate on test set.
+    Returns RMSE.
+    """
+    # Convert to Tensors
+    X_train_t = torch.tensor(X_train, dtype=torch.float32).to(device)
+    y_train_t = torch.tensor(y_train, dtype=torch.float32).unsqueeze(1).to(device)
+    X_test_t = torch.tensor(X_test, dtype=torch.float32).to(device)
+    y_test_t = torch.tensor(y_test, dtype=torch.float32).unsqueeze(1).to(device)
+    
+    # Model
+    model = BatteryLSTM(
+        input_dim=input_dim,
+        hidden_dim=hidden_dim,
+        num_layers=num_layers,
+        dropout=dropout
+    ).to(device)
+    
+    criterion = nn.MSELoss()
+    optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+    
+    # Training
+    model.train()
+    for epoch in range(epochs):
+        optimizer.zero_grad()
+        output = model(X_train_t)
+        loss = criterion(output, y_train_t)
+        loss.backward()
+        optimizer.step()
+        
+        if verbose and (epoch+1) % 10 == 0:
+            logger.info(f"Epoch {epoch+1}/{epochs}, Loss: {loss.item():.4f}")
+            
+    # Evaluation
+    model.eval()
+    with torch.no_grad():
+        preds = model(X_test_t)
+        test_loss = criterion(preds, y_test_t)
+        rmse = np.sqrt(test_loss.item())
+        
+    return float(rmse)
+
+def main():
+    """Main training entry point."""
     config = load_config()
     
-    # Load Data
-    print("Loading Data...")
+    logger.info("Loading Data...")
     loader = BatteryDataLoader()
-    df = loader.load_data(config['data']['batteries'])
-    
+    try:
+        df = loader.load_data(config['data']['batteries'])
+    except Exception as e:
+        logger.error(f"Failed to load data: {e}")
+        return
+
     # Features
     features = config['data']['features']
     target = "rul"
@@ -44,10 +146,10 @@ def train_lstm():
     
     # Train/Test Split (Leave one out)
     test_battery = config['data']['batteries'][-1]
-    train_df = df[df['battery_id'] != test_battery]
-    test_df = df[df['battery_id'] == test_battery]
+    train_df = df[df['battery_id'] != test_battery].copy()
+    test_df = df[df['battery_id'] == test_battery].copy()
     
-    # Standardization (Fit on Train, Apply to All for leakage prevention)
+    # Standardization
     mean = train_df[features].mean()
     std = train_df[features].std()
     
@@ -58,54 +160,31 @@ def train_lstm():
     X_train, y_train = create_sequences(train_df, window_size, features, target)
     X_test, y_test = create_sequences(test_df, window_size, features, target)
     
-    X_train_t = torch.tensor(X_train, dtype=torch.float32)
-    y_train_t = torch.tensor(y_train, dtype=torch.float32).unsqueeze(1)
-    X_test_t = torch.tensor(X_test, dtype=torch.float32)
-    y_test_t = torch.tensor(y_test, dtype=torch.float32).unsqueeze(1)
-    
-    # Model
-    model = BatteryLSTM(
+    if len(X_train) == 0:
+        logger.error("No training sequences created.")
+        return
+
+    logger.info(f"Training on {len(X_train)} sequences, Testing on {len(X_test)} sequences.")
+
+    rmse = train_evaluate_lstm(
+        X_train, y_train, X_test, y_test,
         input_dim=len(features),
+        seq_length=window_size,
         hidden_dim=config['model']['hidden_dim'],
         num_layers=config['model']['num_layers'],
-        dropout=config['model']['dropout']
+        dropout=config['model']['dropout'],
+        learning_rate=config['training']['learning_rate'],
+        epochs=config['training']['epochs'],
+        verbose=True
     )
     
-    criterion = nn.MSELoss()
-    optimizer = optim.Adam(model.parameters(), lr=config['training']['learning_rate'])
+    logger.info(f"Test RMSE: {rmse:.4f}")
     
-    # Training Loop
-    epochs = config['training']['epochs']
-    print(f"Training for {epochs} epochs...")
-    
-    for epoch in range(epochs):
-        model.train()
-        optimizer.zero_grad()
-        output = model(X_train_t)
-        loss = criterion(output, y_train_t)
-        loss.backward()
-        optimizer.step()
-        
-        if (epoch+1) % 10 == 0:
-            print(f"Epoch {epoch+1}/{epochs}, Loss: {loss.item():.4f}")
-            
-    # Save Model
+    # Save Metrics
     save_dir = Path("results/nn_baseline")
     save_dir.mkdir(parents=True, exist_ok=True)
-    torch.save(model.state_dict(), save_dir / "lstm_model.pth")
-    print(f"Model saved to {save_dir}/lstm_model.pth")
-    
-    # Eval
-    model.eval()
-    with torch.no_grad():
-        preds = model(X_test_t)
-        test_loss = criterion(preds, y_test_t)
-        
-    print(f"Test MSE: {test_loss.item():.4f}")
-    
-    # Save RMSE metric
-    metrics = pd.DataFrame([{"model": "LSTM", "rmse": np.sqrt(test_loss.item())}])
-    metrics.to_csv(save_dir / "metrics.csv", index=False)
+    with open(save_dir / "metrics.csv", "w") as f:
+        f.write(f"model,rmse\nLSTM,{rmse}")
 
 if __name__ == "__main__":
-    train_lstm()
+    main()

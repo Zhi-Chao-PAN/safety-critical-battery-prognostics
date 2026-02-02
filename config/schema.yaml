@@ -4,7 +4,7 @@ dataset:
   path: data/battery_data
 
 target:
-  name: RUL
+  name: rul
 
 group:
   name: battery_id
@@ -13,16 +13,12 @@ features:
   numeric:
     - discharge_time
     - max_temp
-    - voltage_drop
 
 modeling:
   standardize:
     - discharge_time
-    - decrease_in_voltage
-    - time_constant_current
-    - min_temp
     - max_temp
-    - RUL
+    - rul
 
 bayesian:
   pooled:
