@@ -17,7 +17,7 @@ We implemented a Long Short-Term Memory (LSTM) network with a sliding window arc
 - **Hidden Layers**: 2-layer LSTM (64 units each) with Dropout (0.2).
 - **Output**: Linear projection to RUL.
 
-### 2.2 Probabilistic Proposal: Hierarchical Bayesian Linear Regression
+### 2.2 Probabilistic Proposal: Hierarchical Probabilistic Degradation Model
 The proposed model utilizes partial pooling to learn degradation trends across a battery population while adapting to individual battery quirks (intercepts $\alpha_j$ and slopes $\beta_j$).
 - **Likelihood**: $y_{ij} \sim \mathcal{N}(\alpha_j + \mathbf{x}_{ij}^\top \boldsymbol{\beta}, \sigma)$
 - **Hyperpriors**: Informative priors centered on population means to stabilize MCMC sampling.

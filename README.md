@@ -13,7 +13,7 @@ This research project addresses the "Black Box" problem in predictive maintenanc
 
 Using the **NASA PCoE Battery Dataset**, this repository implements and compares:
 1.  **Baseline**: A deterministic LSTM (Sliding Window approach).
-2.  **Proposed**: A Hierarchical Bayesian Linear Regression model (Probabilistic approach).
+2.  **Proposed**: A Hierarchical Probabilistic Degradation Model (Probabilistic approach).
 
 ## 📊 Key Findings (The "Safety Gap")
 The visualization below demonstrates the critical advantage of the Bayesian approach on Test Battery `B0018`:

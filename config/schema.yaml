@@ -12,10 +12,8 @@ group:
 features:
   numeric:
     - discharge_time
-    - decrease_in_voltage
-    - time_constant_current
-    - min_temp
     - max_temp
+    - voltage_drop
 
 modeling:
   standardize:
