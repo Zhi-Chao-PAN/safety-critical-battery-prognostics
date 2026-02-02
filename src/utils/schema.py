@@ -36,9 +36,9 @@ def load_schema(schema_path: Path = SCHEMA_PATH) -> Dict[str, Any]:
     Example:
         >>> schema = load_schema()
         >>> schema["target"]["name"]
-        'price'
+        'RUL'
         >>> schema["features"]["numeric"]
-        ['median_income', 'house_age', ...]
+        ['Discharge_Time', 'Internal_Resistance', ...]
     """
     if not schema_path.exists():
         raise FileNotFoundError(f"Schema not found: {schema_path}")

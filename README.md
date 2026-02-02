@@ -6,7 +6,7 @@
 [![PyMC](https://img.shields.io/badge/PyMC-Bayesian-green.svg)](https://www.pymc.io/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code Style: Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![CI Status](https://github.com/Zhi-Chao-PAN/spatial-bayes-vs-deep-learning/actions/workflows/ci.yml/badge.svg)](https://github.com/Zhi-Chao-PAN/spatial-bayes-vs-deep-learning/actions)
+[![CI Status](https://github.com/Zhi-Chao-PAN/safety-critical-battery-prognostics/actions/workflows/ci.yml/badge.svg)](https://github.com/Zhi-Chao-PAN/safety-critical-battery-prognostics/actions)
 
 ---
 
@@ -87,8 +87,8 @@ graph TD
 
 ### 1. Installation
 ```bash
-git clone https://github.com/Zhi-Chao-PAN/spatial-bayes-vs-deep-learning.git
-cd spatial-bayes-vs-deep-learning
+git clone https://github.com/Zhi-Chao-PAN/safety-critical-battery-prognostics.git
+cd safety-critical-battery-prognostics
 pip install -r requirements.txt
 ```
 
@@ -125,7 +125,7 @@ If you use this work, please cite:
   author = {Pan, Zhi-Chao},
   title = {Safety-Critical Battery Prognostics: Bayesian vs Deterministic Approaches},
   year = {2026},
-  url = {https://github.com/Zhi-Chao-PAN/spatial-bayes-vs-deep-learning}
+  url = {https://github.com/Zhi-Chao-PAN/safety-critical-battery-prognostics}
 }
 ```
 

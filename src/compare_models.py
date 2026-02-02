@@ -36,7 +36,7 @@ def compare_models():
     
     # Preprocessing (Need to mimic training stats - ideally load a scaler)
     # For demo, we fit on all OTHER batteries to standardize the test battery
-    features = config['data']['features']
+    features = ['discharge_time', 'max_temp']
     target = "rul"
     
     train_df = df[df['battery_id'] != test_battery]

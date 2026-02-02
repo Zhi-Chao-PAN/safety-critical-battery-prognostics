@@ -6,7 +6,7 @@ authors:
 title: "Safety-Critical Battery Prognostics: Bayesian vs Deterministic Approaches"
 version: 1.0.0
 date-released: 2026-02-02
-url: "https://github.com/Zhi-Chao-PAN/spatial-bayes-vs-deep-learning"
+url: "https://github.com/Zhi-Chao-PAN/safety-critical-battery-prognostics"
 keywords:
   - "prognostics-health-management"
   - "lithium-ion-batteries"
