@@ -1,2 +1,0 @@
-LSTM RMSE: 36.53
-Bayesian Coverage: 100.00%
