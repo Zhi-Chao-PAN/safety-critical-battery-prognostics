@@ -11,6 +11,7 @@ Protocol:
 from typing import Type, Any, Dict, List, Tuple, Optional
 import numpy as np
 import pandas as pd
+import torch
 from pathlib import Path
 from sklearn.model_selection import LeaveOneGroupOut
 from sklearn.linear_model import LinearRegression
@@ -145,19 +146,36 @@ def main() -> None:
             logger.warning(f"Not enough data for sequence length {SEQ_LENGTH} in battery {test_battery}")
             continue
 
-        # Train & Eval
-        rmse_lstm = train_evaluate_lstm(
+        # Train & Eval (Get Model)
+        rmse_lstm, model = train_evaluate_lstm(
             X_train_seq, y_train_seq, X_test_seq, y_test_seq,
             input_dim=len(features),
             seq_length=SEQ_LENGTH,
             verbose=False
         )
         
-        res_lstm = {"Model": "LSTM", "Battery": test_battery, "RMSE": rmse_lstm}
+        # MC Dropout Uncertainty Quantification
+        # Convert Test Data to Tensor
+        device = next(model.parameters()).device
+        X_test_t = torch.tensor(X_test_seq, dtype=torch.float32).to(device)
+        
+        mean_pred, std_pred = model.predict_with_uncertainty(X_test_t, n_samples=50)
+        mean_pred = mean_pred.cpu().numpy().flatten()
+        std_pred = std_pred.cpu().numpy().flatten()
+        
+        # Calculate NLL (Negative Log Likelihood) or just log the uncertainty
+        avg_uncertainty = np.mean(std_pred)
+        
+        res_lstm = {
+            "Model": "LSTM (MC Dropout)", 
+            "Battery": test_battery, 
+            "RMSE": rmse_lstm,
+            "Uncertainty_Sigma": avg_uncertainty
+        }
         results.append(res_lstm)
         
         logger.info(f"  Linear RMSE: {metrics_lin['RMSE']:.4f}")
-        logger.info(f"  LSTM RMSE:   {rmse_lstm:.4f}")
+        logger.info(f"  LSTM RMSE:   {rmse_lstm:.4f} (Sigma: {avg_uncertainty:.4f})")
 
         # Visualization for B0018 (Safety Case)
         if test_battery == 'B0018':

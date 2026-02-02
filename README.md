@@ -12,8 +12,8 @@
 This research project addresses the "Black Box" problem in predictive maintenance. While Long Short-Term Memory (LSTM) networks offer high accuracy for Remaining Useful Life (RUL) prediction, they often fail to capture **epistemic uncertainty**—a critical flaw when making decisions for high-stakes assets like EV batteries or aerospace components.
 
 Using the **NASA PCoE Battery Dataset**, this repository implements and compares:
-1.  **Baseline**: A deterministic LSTM (Sliding Window approach).
-2.  **Proposed**: A Hierarchical Probabilistic Degradation Model (Probabilistic approach).
+1.  **Baseline**: A deterministic LSTM with **MC Dropout** for approximate Bayesian uncertainty.
+2.  **Proposed**: A Hierarchical Probabilistic Degradation Model (Full Bayesian Inference).
 
 ## 🛡️ Impact & Safety Significance
 This project aligns with **ISO 26262** functional safety requirements by providing probabilistic bounds rather than blind point estimates. Such systems are critical for **Level 4 autonomous systems**, where failure to quantify uncertainty could lead to catastrophic battery thermal runaway.
@@ -25,6 +25,29 @@ The visualization below demonstrates the critical advantage of the Bayesian appr
 
 * **Red Line (LSTM)**: Provides a single point estimate. It fails to account for the capacity regeneration phenomena (spikes) and offers no warning of confidence loss.
 * **Green Zone (Bayesian)**: The 95% High Density Interval (HDI) successfully widens as data becomes scarce or noisy, providing a necessary **"Safety Buffer"** for human operators.
+
+## 🏗️ System Architecture
+
+```mermaid
+graph LR
+    A[Battery Data] --> B{Model Selection}
+    B -->|Baseline| C[LSTM Network]
+    C --> D[MC Dropout Inference]
+    D --> E[Probabilistic Output]
+    
+    B -->|Proposed| F[Hierarchical Bayesian]
+    F --> G[MCMC Sampling]
+    G --> H[Posterior Distribution]
+    
+    E --> I[Safety Comparison]
+    H --> I
+    I --> J[Decision: Safe/Unsafe]
+```
+
+## ⚠️ Limitations & Future Work
+1.  **Dataset Scope**: This study utilizes the NASA PCoE dataset ($N=4$ test batteries). While sufficient for method validation, industrial deployment would require validation on larger datasets (e.g., CALCE, MIT-Stanford).
+2.  **Computational Cost**: MCMC sampling is computationally intensive compared to LSTM inference. Future work will explore Variational Inference (VI) for real-time applicability.
+
 
 ## 🚀 Quick Start
 

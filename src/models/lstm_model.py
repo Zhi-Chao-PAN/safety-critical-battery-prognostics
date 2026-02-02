@@ -42,3 +42,16 @@ class BatteryLSTM(nn.Module):
         
         out = self.fc(last_step_out)
         return out
+
+    def predict_with_uncertainty(self, x: torch.Tensor, n_samples: int = 50) -> tuple[torch.Tensor, torch.Tensor]:
+        """
+        Perform MC Dropout inference.
+        """
+        self.train() # Enable dropout
+        preds_list = []
+        with torch.no_grad():
+            for _ in range(n_samples):
+                preds_list.append(self.forward(x))
+        
+        preds = torch.stack(preds_list)
+        return preds.mean(dim=0), preds.std(dim=0)

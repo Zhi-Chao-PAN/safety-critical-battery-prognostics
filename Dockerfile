@@ -1,22 +1,26 @@
-# Use an official Python runtime as a parent image
-FROM python:3.9-slim
+# Use NVIDIA CUDA base image for GPU support
+FROM pytorch/pytorch:2.0.1-cuda11.7-cudnn8-runtime
 
-# Set the working directory in the container
+# Set working directory
 WORKDIR /app
 
-# Copy the requirements file into the container at /app
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements first to leverage caching
 COPY requirements.txt .
 
-# Install any needed packages specified in requirements.txt
+# Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the current directory contents into the container at /app
+# Copy project files
 COPY . .
 
-# Set environment variable to make sure python outputs to console
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONPATH=/app
+# Set environment variables
+ENV PYTHONPATH="${PYTHONPATH}:/app"
 
-# Run the pipeline when the container launches
-# Or keep it interactive
-CMD ["bash"]
+# Default command: Run rigor evaluation
+CMD ["python", "-m", "src.evaluate_rigor"]

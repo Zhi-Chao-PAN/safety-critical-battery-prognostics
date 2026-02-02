@@ -44,3 +44,16 @@ jobs:
         mkdir -p tests
         echo "def test_dummy(): assert True" > tests/test_dummy.py
         pytest tests/
+
+    - name: Run Rigorous Evaluation (Report Generation)
+      run: |
+        python -m src.evaluate_rigor
+
+    - name: Upload Safety Report Artifacts
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: safety-report
+        path: |
+          results/rigor/*.csv
+          results/*.png

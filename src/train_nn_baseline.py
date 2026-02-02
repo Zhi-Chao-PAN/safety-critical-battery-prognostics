@@ -84,7 +84,7 @@ def train_evaluate_lstm(
     batch_size: int = 32,
     device: str = "cpu",
     verbose: bool = False
-) -> float:
+) -> Tuple[float, nn.Module]:
     """
     Train LSTM and evaluate on test set.
     Returns RMSE.
@@ -125,7 +125,7 @@ def train_evaluate_lstm(
         test_loss = criterion(preds, y_test_t)
         rmse = np.sqrt(test_loss.item())
         
-    return float(rmse)
+    return float(rmse), model
 
 def main():
     """Main training entry point."""

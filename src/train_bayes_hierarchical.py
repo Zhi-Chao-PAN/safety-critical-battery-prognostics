@@ -49,7 +49,8 @@ def train():
         rul_obs = pm.Normal("rul_obs", mu=mu, sigma=sigma, observed=y)
         
         # Sampling (MCMC)
-        trace = pm.sample(500, tune=500, chains=2, cores=1, target_accept=0.9)
+        cores = os.cpu_count() or 1
+        trace = pm.sample(500, tune=500, chains=2, cores=cores, target_accept=0.9)
         
         save_path = "results/bayes_hierarchical"
         os.makedirs(save_path, exist_ok=True)

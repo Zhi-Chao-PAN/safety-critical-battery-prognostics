@@ -72,17 +72,18 @@ venv.bak/
 *.swo
 *~
 
-# Project specific
-results/bayes_hierarchical/trace_*.nc
-results/bayes/trace_*.nc
-results/bayes_pooled/trace_*.nc
-results/models/*.pth
+# Project Artifacts - STRICT RULES
+results/**/*.pth
+results/**/*.nc
+results/**/*.png
+!results/final_comparison_B0018.png
+*.pth
+*.nc
 *.log
 
 # OS specific
 .DS_Store
 Thumbs.db
 
+# Data
 data/
-*.pth
-*.nc
