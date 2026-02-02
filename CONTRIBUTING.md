@@ -6,8 +6,8 @@ Thank you for your interest in contributing to this research project!
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/PanZhiChao666/spatial-bayes-vs-deep.git
-   cd spatial-bayes-vs-deep
+   git clone https://github.com/Zhi-Chao-PAN/safety-critical-battery-prognostics.git
+   cd safety-critical-battery-prognostics
    ```
 
 2. **Create virtual environment**

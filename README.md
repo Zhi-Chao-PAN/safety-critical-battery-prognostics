@@ -15,6 +15,9 @@ Using the **NASA PCoE Battery Dataset**, this repository implements and compares
 1.  **Baseline**: A deterministic LSTM (Sliding Window approach).
 2.  **Proposed**: A Hierarchical Probabilistic Degradation Model (Probabilistic approach).
 
+## 🛡️ Impact & Safety Significance
+This project aligns with **ISO 26262** functional safety requirements by providing probabilistic bounds rather than blind point estimates. Such systems are critical for **Level 4 autonomous systems**, where failure to quantify uncertainty could lead to catastrophic battery thermal runaway.
+
 ## 📊 Key Findings (The "Safety Gap")
 The visualization below demonstrates the critical advantage of the Bayesian approach on Test Battery `B0018`:
 

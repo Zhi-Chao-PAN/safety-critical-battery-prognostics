@@ -11,7 +11,7 @@ body {
     color: #333;
 }
 
-/* 隐藏所有可能的页眉页脚容器 */
+/* 隐藏浏览器打印时的页眉页脚 */
 header,
 footer,
 .header,
@@ -34,8 +34,8 @@ h3 {
 
 h1 {
     text-align: center;
-    font-size: 18pt;
-    margin-bottom: 0.5in;
+    font-size: 22pt;
+    margin-bottom: 0.2in;
 }
 
 h2 {
@@ -75,11 +75,4 @@ img {
     height: auto;
     border: 1px solid #eee;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.author-block {
-    text-align: center;
-    font-size: 14pt;
-    margin-top: -30px;
-    margin-bottom: 40px;
 }

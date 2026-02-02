@@ -1,9 +1,9 @@
 # Technical Report: Uncertainty-Aware Battery Health Management
 **A Comparative Study of Deep Learning and Hierarchical Bayesian Inference**
 
-<div class="author-block">
-    <strong>Author: Zhichao Pan</strong>
-</div>
+<p style="text-align: center; font-size: 14pt; margin-top: -20px;">
+    <strong>Author: Zhichao Pan (Zhichao Pan)</strong>
+</p>
 
 ## Abstract
 Prognostics and Health Management (PHM) for Lithium-ion batteries is critical for the safety of electric vehicles and aerospace systems. While deep learning models like LSTMs provide state-of-the-art accuracy, they typically lack intrinsic uncertainty quantification. This report evaluates a Hierarchical Bayesian approach against a deterministic LSTM baseline. Our results demonstrate that while the LSTM achieves low RMSE, the Bayesian model provides a 100% coverage rate and a quantifiable "Safety Buffer Zone," enabling risk-aware decision-making in safety-critical applications.
@@ -11,7 +11,7 @@ Prognostics and Health Management (PHM) for Lithium-ion batteries is critical fo
 ---
 
 ## 1. Introduction
-Modern energy storage systems require high-fidelity Remaining Useful Life (RUL) predictions. Traditional deterministic models provide point estimates ($y_{\text{pred}}$), which can be dangerously overconfident during the non-linear degradation phases of a battery. This research implements a probabilistic framework to capture both aleatoric (noise) and epistemic (model) uncertainty.
+Modern energy storage systems require high-fidelity Remaining Useful Life (RUL) predictions. Traditional deterministic models provide point estimates ($\hat{y}$), which can be dangerously overconfident during the non-linear degradation phases of a battery. This research implements a probabilistic framework to capture both aleatoric (noise) and epistemic (model) uncertainty.
 
 ## 2. Methodology
 
