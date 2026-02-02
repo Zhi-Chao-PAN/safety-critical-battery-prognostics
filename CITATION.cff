@@ -4,7 +4,7 @@ authors:
 - family-names: "Pan"
   given-names: "Zhi-Chao"
 title: "Safety-Critical Battery Prognostics: Bayesian vs Deterministic Approaches"
-version: 1.0.0
+version: 1.0.0-submission
 date-released: 2026-02-02
 url: "https://github.com/Zhi-Chao-PAN/safety-critical-battery-prognostics"
 keywords:

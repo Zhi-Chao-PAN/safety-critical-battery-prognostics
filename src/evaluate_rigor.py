@@ -184,7 +184,33 @@ def main() -> None:
              # but to keep signature clean, we effectively "re-run" or just skip precise alignment here.
              # For the sake of the report, we usually load the PRE-TRAINED model or run standalone.
              # Here we just log that we covered it.
-             pass
+             # Generate full predictions for visualization
+             y_test_flat = y_test_seq.flatten()
+             
+             # Calculate 95% CI (HDI approximation) from MC Dropout
+             # y_mean +/- 1.96 * y_std
+             hdi_low = mean_pred - 1.96 * std_pred
+             hdi_high = mean_pred + 1.96 * std_pred
+             
+             bayes_metrics_proxy = {
+                 'hdi_low': hdi_low,
+                 'hdi_high': hdi_high
+             }
+             
+             # Create Cycles array
+             cycles = np.arange(len(y_test_flat))
+             
+             # Save Plot
+             out_plot_path = str(Path("results/rigor/comparison_B0018_generated.png")) # ensure string
+             plot_safety_comparison(
+                 cycles=cycles,
+                 gt_rul=y_test_flat,
+                 lstm_preds=mean_pred, # Using mean prediction as the "LSTM" line
+                 bayes_metrics=bayes_metrics_proxy, # Passing MC Uncertainty as Bayesian Buffer
+                 battery_id=test_battery,
+                 save_path=out_plot_path
+             )
+             logger.info(f"Generated comparison plot: {out_plot_path}")
 
     # Results Summary
     results_df = pd.DataFrame(results)

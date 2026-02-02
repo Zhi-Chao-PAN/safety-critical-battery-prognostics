@@ -12,7 +12,7 @@
 This research project addresses the "Black Box" problem in predictive maintenance. While Long Short-Term Memory (LSTM) networks offer high accuracy for Remaining Useful Life (RUL) prediction, they often fail to capture **epistemic uncertainty**—a critical flaw when making decisions for high-stakes assets like EV batteries or aerospace components.
 
 Using the **NASA PCoE Battery Dataset**, this repository implements and compares:
-1.  **Baseline**: A deterministic LSTM with **MC Dropout** for approximate Bayesian uncertainty.
+1.  **Baseline**: A **Bayesian LSTM (via MC Dropout)** (Approximation).
 2.  **Proposed**: A Hierarchical Probabilistic Degradation Model (Full Bayesian Inference).
 
 ## 🛡️ Impact & Safety Significance
@@ -30,7 +30,7 @@ The visualization below demonstrates the critical advantage of the Bayesian appr
 
 ```mermaid
 graph LR
-    A[Battery Data] --> B{Model Selection}
+    A[Battery Data] --> B{Methodology Comparison}
     B -->|Baseline| C[LSTM Network]
     C --> D[MC Dropout Inference]
     D --> E[Probabilistic Output]

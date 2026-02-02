@@ -7,8 +7,12 @@ from src.data_loader import BatteryDataLoader
 
 def train():
     print("Loading Data...")
+    print("Loading Data...")
     loader = BatteryDataLoader()
-    df = loader.load_data()
+    # Explicitly exclude test battery B0018 to prevent data leakage
+    train_batteries = ['B0005', 'B0006', 'B0007']
+    print(f"Training on: {train_batteries}")
+    df = loader.load_data(battery_ids=train_batteries)
     
     # 1. Feature Engineering (Standardization)
     X_cols = ['discharge_time', 'max_temp']
