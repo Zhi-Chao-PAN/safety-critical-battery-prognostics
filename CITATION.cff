@@ -1,16 +1,18 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
 authors:
-- family-names: "Pan"
-  given-names: "Zhichao"
-title: "Spatially-Aware Bayesian Machine Learning for Housing Price Prediction"
+  - family-names: "Pan"
+    given-names: "Zhi-Chao"
+    orcid: "https://orcid.org/0000-0000-0000-0000"
+title: "Safety-Critical Battery Prognostics: Bayesian vs. Deterministic"
 version: 1.0.0
-date-released: 2026-01-27
-url: "https://github.com/PanZhiChao666/spatial-bayes-vs-deep"
-keywords:
-  - bayesian-inference
-  - spatial-statistics
-  - deep-learning
-  - pytorch
-  - pymc
-license: MIT
+date-released: 2026-02-02
+url: "https://github.com/Zhi-Chao-PAN/spatial-bayes-vs-deep-learning"
+preferred-citation:
+  type: article
+  authors:
+  - family-names: "Pan"
+    given-names: "Zhi-Chao"
+  title: "Uncertainty Quantification in Battery Health Management: A Comparative Study"
+  year: 2026
+  journal: "arXiv preprint"

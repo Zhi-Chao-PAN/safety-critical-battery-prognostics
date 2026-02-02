@@ -16,9 +16,12 @@ import numpy as np
 from pathlib import Path
 from sklearn.preprocessing import StandardScaler
 
-from utils.schema import load_schema
-from data_loader import load_battery_data
-from models.lstm_model import BatteryLSTM
+from src.utils.config import load_config
+from src.utils.logger import setup_logger
+from src.data_loader import load_battery_data
+from src.models.lstm_model import BatteryLSTM
+
+logger = setup_logger(__name__)
 
 def create_sequences(
     data: pd.DataFrame, 
@@ -96,6 +99,7 @@ def train_evaluate_lstm(
     train_dataset = torch.utils.data.TensorDataset(X_train_t, y_train_t)
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     
+    logger.info(f"Starting training for {epochs} epochs...")
     for epoch in range(epochs):
         model.train()
         epoch_loss = 0
@@ -108,12 +112,12 @@ def train_evaluate_lstm(
             epoch_loss += loss.item()
         
         if verbose and (epoch + 1) % 10 == 0:
-             print(f"Epoch {epoch+1}/{epochs}: Avg Loss {epoch_loss / len(train_loader):.4f}")
+             logger.info(f"Epoch {epoch+1}/{epochs}: Avg Loss {epoch_loss / len(train_loader):.4f}")
 
     # Save Model
     if save_path:
         torch.save(model.state_dict(), save_path)
-        print(f"Model saved to {save_path}")
+        logger.info(f"Model saved to {save_path}")
 
     # Evaluation
     model.eval()
@@ -125,17 +129,23 @@ def train_evaluate_lstm(
     return rmse
 
 def main() -> None:
-    schema = load_schema()
-    data_path: str = schema["dataset"]["path"]
-    target_str: str = schema["target"]["name"]
-    features: list = schema["features"]["numeric"]
-    group_col: str = schema["group"]["name"]
+    # Load standardized Pydantic Config
+    try:
+        config = load_config()
+    except Exception as e:
+        logger.error("Configuration load failed. Exiting.")
+        return
+
+    data_path = config.dataset.path
+    target_str = config.target.name
+    features = config.features.numeric
+    group_col = config.group.name
     
-    print(f"Loading data from: {data_path}")
+    logger.info(f"Loading data from: {data_path}")
     df = load_battery_data(data_path)
     
     # Standardize Features
-    print("Standardizing features...")
+    logger.info("Standardizing features...")
     scaler_x = StandardScaler()
     df[features] = scaler_x.fit_transform(df[features])
     
@@ -145,19 +155,19 @@ def main() -> None:
     test_battery = batteries[-1]
     train_batteries = batteries[:-1]
     
-    print(f"Train Batteries: {train_batteries}")
-    print(f"Test Battery: {test_battery}")
+    logger.info(f"Train Batteries: {train_batteries}")
+    logger.info(f"Test Battery: {test_battery}")
     
     train_df = df[df[group_col].isin(train_batteries)]
     test_df = df[df[group_col] == test_battery]
     
     # Create Sequences
     SEQ_LENGTH = 30
-    print(f"Creating sequences (Length={SEQ_LENGTH})...")
+    logger.info(f"Creating sequences (Length={SEQ_LENGTH})...")
     X_train, y_train = create_sequences(train_df, SEQ_LENGTH, features, target_str, group_col)
     X_test, y_test = create_sequences(test_df, SEQ_LENGTH, features, target_str, group_col)
     
-    print(f"Train Shape: {X_train.shape}, Test Shape: {X_test.shape}")
+    logger.info(f"Train Shape: {X_train.shape}, Test Shape: {X_test.shape}")
     
     rmse = train_evaluate_lstm(
         X_train, y_train, X_test, y_test, 
@@ -168,8 +178,8 @@ def main() -> None:
         save_path=Path("results/nn_baseline/lstm_model.pth")
     )
     
-    print("\n===== PyTorch LSTM Baseline Results =====")
-    print(f"Test RMSE: {rmse:.4f}")
+    logger.info("\n===== PyTorch LSTM Baseline Results =====")
+    logger.info(f"Test RMSE: {rmse:.4f}")
     
     results_dir = Path("results/nn_baseline")
     results_dir.mkdir(parents=True, exist_ok=True)

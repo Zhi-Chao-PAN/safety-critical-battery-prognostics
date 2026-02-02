@@ -5,6 +5,10 @@
 [![PyTorch](https://img.shields.io/badge/PyTorch-LSTM-red.svg)](https://pytorch.org/)
 [![PyMC](https://img.shields.io/badge/PyMC-Bayesian-green.svg)](https://www.pymc.io/)
 [![Dataset](https://img.shields.io/badge/Dataset-NASA_PCoE-orange.svg)](https://www.nasa.gov/)
+[![CI](https://github.com/Zhi-Chao-PAN/spatial-bayes-vs-deep-learning/actions/workflows/ci.yml/badge.svg)](https://github.com/Zhi-Chao-PAN/spatial-bayes-vs-deep-learning/actions)
+[![Docker](https://img.shields.io/badge/docker-build-blue)](https://www.docker.com/)
+[![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
 
 ## 📌 Project Overview
 > "In safety-critical systems (e.g., EVs, Aerospace), a confident wrong prediction is fatal. Knowing *what* you don't know is crucial."

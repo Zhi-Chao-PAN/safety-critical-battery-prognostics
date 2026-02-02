@@ -17,9 +17,11 @@ import pymc as pm
 import arviz as az
 from pathlib import Path
 
-from utils.schema import load_schema
-from data_loader import load_battery_data
+from src.utils.config import load_config
+from src.utils.logger import setup_logger
+from src.data_loader import load_battery_data
 
+logger = setup_logger(__name__)
 
 def standardize_series(series: pd.Series) -> np.ndarray:
     """Standardize a pandas Series to zero mean and unit variance."""
@@ -89,20 +91,20 @@ def build_model(
 
 
 def main() -> None:
-    schema = load_schema()
+    try:
+        config = load_config()
+    except Exception as e:
+        logger.error(f"Config load failed: {e}")
+        return
 
-    data_path: str = schema["dataset"]["path"]
-    target: str = schema["target"]["name"]
-    group_var: str = schema["bayesian"]["hierarchical"]["group"]
-    
-    slope_vars: Union[str, list] = schema["bayesian"]["hierarchical"]["slope"]
-    if isinstance(slope_vars, str):
-        slope_vars = [slope_vars]
+    data_path = config.dataset.path
+    target = config.target.name
+    group_var = config.bayesian.hierarchical.group
+    slope_vars = config.bayesian.hierarchical.slope
 
-    print("Loading battery data...")
-    print(f"Data directory: {data_path}")
+    logger.info("Loading battery data...")
+    logger.info(f"Data directory: {data_path}")
     
-    # NEW: Load via data_loader
     df = load_battery_data(data_path)
 
     # ===== Extract =====
@@ -119,23 +121,23 @@ def main() -> None:
     n_groups = len(group_codes)
 
     # ===== Standardization =====
-    if target in schema["modeling"].get("standardize", []):
-        print(f"Standardizing target '{target}'...")
+    if target in config.modeling.standardize:
+        logger.info(f"Standardizing target '{target}'...")
         y = standardize_series(df[target])
     else:
         y = y_raw
 
-    print(f"Standardizing features: {slope_vars}")
+    logger.info(f"Standardizing features: {slope_vars}")
     x_df = standardize_matrix(x_raw_df)
     x = x_df.values
 
-    print(f"Hierarchical groups ({group_var}): {n_groups} {group_codes}")
-    print(f"Slope features: {slope_vars}")
+    logger.info(f"Hierarchical groups ({group_var}): {n_groups} {group_codes}")
+    logger.info(f"Slope features: {slope_vars}")
 
-    print("Building model...")
+    logger.info("Building model...")
     model = build_model(y, x, group_idx, n_groups, n_features)
 
-    print("Sampling hierarchical Bayesian model...")
+    logger.info("Sampling hierarchical Bayesian model...")
     with model:
         # Reduced chains/draws for faster feedback in this refactor, 
         # normally you'd want more.
@@ -152,11 +154,17 @@ def main() -> None:
     results_dir.mkdir(parents=True, exist_ok=True)
 
     trace_path = results_dir / "trace_hierarchical.nc"
-    az.to_netcdf(idata, trace_path)
+    try:
+        az.to_netcdf(idata, trace_path)
+        logger.info(f"Trace saved to {trace_path}")
+    except Exception as e:
+        logger.error(f"Failed to save trace: {e}")
 
-    print("\n===== Hierarchical Bayesian Results =====")
-    print(az.summary(idata, var_names=["mu_beta"], kind="stats"))
-    print(f"Saved to: {results_dir}")
+    logger.info("\n===== Hierarchical Bayesian Results =====")
+    try:
+        logger.info(az.summary(idata, var_names=["mu_beta"], kind="stats"))
+    except Exception as e:
+        logger.warning(f"Could not print summary: {e}")
 
 
 if __name__ == "__main__":

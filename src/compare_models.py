@@ -7,10 +7,10 @@ import numpy as np
 from pathlib import Path
 from sklearn.preprocessing import StandardScaler
 
-from data_loader import load_battery_data
-from models.lstm_model import BatteryLSTM
-from train_nn_baseline import create_sequences
-from utils.schema import load_schema
+from src.utils.schema import load_schema
+from src.data_loader import load_battery_data
+from src.models.lstm_model import BatteryLSTM
+from src.train_nn_baseline import create_sequences
 
 def compare_predictions(battery_id=None):
     schema = load_schema()
@@ -103,58 +103,73 @@ def compare_predictions(battery_id=None):
     else:
         print("Trace not found, skipping Bayesian overlay.")
 
-    # 5. Plotting (The 'Killer Plot')
+    # 5. Plotting (The 'Killer Plot' - Publication Quality)
     print("Plotting...")
-    fig, ax = plt.subplots(figsize=(12, 6))
+    
+    # Style configuration
+    plt.rcParams.update({
+        'font.size': 14,
+        'axes.titlesize': 16,
+        'axes.labelsize': 14,
+        'xtick.labelsize': 12,
+        'ytick.labelsize': 12,
+        'legend.fontsize': 12,
+        'font.family': 'serif', # Academic standard
+        'figure.dpi': 300
+    })
+
+    fig, ax = plt.subplots(figsize=(10, 6))
     
     # Align X-axis to actual cycle numbers (start from seq_length)
     x_axis = np.arange(seq_length, seq_length + len(y_true))
     
     # Ground Truth
-    ax.plot(x_axis, y_true, 'k-', label='Ground Truth RUL', linewidth=2)
+    ax.plot(x_axis, y_true, 'k-', label='Ground Truth', linewidth=2, alpha=0.8)
     
     # LSTM
     ax.plot(x_axis, lstm_pred, 'r--', label='LSTM (Deterministic)', linewidth=2)
     
     # Bayesian
     if bayes_mean is not None:
-        # Plot Mean if desired, or just CI
-        # ax.plot(x_axis, bayes_mean, 'g:', alpha=0.5) 
+        # Plot Mean if desired
+        ax.plot(x_axis, bayes_mean, 'g:', linewidth=2, label='Bayesian Mean')
+        
+        # Uncertainty Interval (HDI)
         ax.fill_between(
             x_axis, 
             bayes_hdi[0], 
             bayes_hdi[1], 
             color='green', 
-            alpha=0.3, 
-            label='Bayesian 95% Uncertainty'
+            alpha=0.2, 
+            label='95% Uncertainty (Safety Buffer)'
         )
     
-    ax.set_title(f'RUL Prediction Safety Analysis: LSTM vs Bayesian (Battery {battery_id})', fontsize=14)
-    ax.set_xlabel('Charge Cycle', fontsize=12)
-    ax.set_ylabel('Remaining Useful Life (Cycles)', fontsize=12)
-    ax.legend(fontsize=12)
-    ax.grid(True, alpha=0.3)
+    ax.set_title(f'Prognostics RUL Prediction: Battery {battery_id}', fontweight='bold')
+    ax.set_xlabel('Charge Cycle Index')
+    ax.set_ylabel('Remaining Useful Life (Cycles)')
+    ax.legend(loc='upper right', frameon=True, framealpha=0.9)
+    ax.grid(True, linestyle='--', alpha=0.4)
     
-    # Annotations to highlight the difference
+    # Highlight Failure Threshold (RUL=0)
+    ax.axhline(0, color='gray', linestyle='-', linewidth=0.5)
+    
+    # Annotations
     if len(x_axis) > 50:
-        idx = int(len(x_axis) * 0.8)
-        ax.annotate('Narrow/No Uncertainty\n(Overconfident)', 
-                    xy=(x_axis[idx], lstm_pred[idx]), 
-                    xytext=(x_axis[idx]-20, lstm_pred[idx]+40),
-                    arrowprops=dict(facecolor='red', shrink=0.05),
-                    color='red')
-        
-        if bayes_mean is not None:
-             ax.annotate('Quantified Risk\n(Safety Buffer)', 
-                    xy=(x_axis[idx], bayes_hdi[1][idx]), 
-                    xytext=(x_axis[idx]+10, bayes_hdi[1][idx]+40),
-                    arrowprops=dict(facecolor='green', shrink=0.05),
-                    color='green')
+        idx = int(len(x_axis) * 0.85)
+        # Avoid index error if simulated seq is shorter
+        if idx < len(lstm_pred):
+            # Annotate Uncertainty
+            if bayes_mean is not None:
+                ax.annotate('Quantified Risk', 
+                        xy=(x_axis[idx], bayes_hdi[1][idx]), 
+                        xytext=(x_axis[idx]-50, bayes_hdi[1][idx]+50),
+                        arrowprops=dict(facecolor='green', shrink=0.05, alpha=0.7),
+                        fontsize=11, color='green', fontweight='bold')
 
-    out_file = Path(f"results/comparison_{battery_id}.png")
+    out_file = Path(f"results/comparison_{battery_id}_paper.png")
     plt.tight_layout()
-    plt.savefig(out_file, dpi=300)
-    print(f"Comparison plot saved to {out_file}")
+    plt.savefig(out_file, dpi=300, bbox_inches='tight')
+    print(f"Publication-quality plot saved to {out_file}")
 
 if __name__ == "__main__":
     compare_predictions()

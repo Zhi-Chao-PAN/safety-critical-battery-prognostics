@@ -1,32 +1,22 @@
-# Dockerfile for Spatial Bayesian vs Deep Learning
-# Ensures fully reproducible environment
+# Use an official Python runtime as a parent image
+FROM python:3.9-slim
 
-FROM python:3.10-slim
-
-# Set working directory
+# Set the working directory in the container
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    git \
-    && rm -rf /var/lib/apt/lists/*
-
-# Copy requirements first for caching
+# Copy the requirements file into the container at /app
 COPY requirements.txt .
 
-# Install Python dependencies
+# Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy project files
+# Copy the current directory contents into the container at /app
 COPY . .
 
-# Set Python path
-ENV PYTHONPATH=/app/src:$PYTHONPATH
+# Set environment variable to make sure python outputs to console
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/app
 
-# Default command: run tests
-CMD ["pytest", "tests/", "-v"]
-
-# Alternative commands:
-# docker run spatial-bayes python src/evaluate_rigor.py
-# docker run spatial-bayes python src/train_bayes_hierarchical.py
+# Run the pipeline when the container launches
+# Or keep it interactive
+CMD ["bash"]
