@@ -13,7 +13,10 @@ echo ""
 echo "📊 [1/3] Running Rigorous Evaluation (may take time)..."
 python -m src.evaluate_rigor
 
-
+# 2. Run Deep Learning Baselines
+# echo ""
+# echo "🧠 [2/3] Training LSTM Neural Network Baseline..."
+# python src/train_nn_baseline.py
 
 # 3. Generate Visualizations (Figures)
 echo ""

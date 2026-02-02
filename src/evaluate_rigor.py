@@ -179,6 +179,7 @@ def main() -> None:
 
         # Visualization for B0018 (Safety Case)
         if test_battery == 'B0018':
+             print("Generating Safety Buffer Plot for B0018...")
              # Re-create full predictions for plot (simplistic, just to show integration)
              # NOTE: In a real run, we'd get these from the train_evaluate_lstm return,
              # but to keep signature clean, we effectively "re-run" or just skip precise alignment here.
