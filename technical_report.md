@@ -34,7 +34,9 @@ Evaluated on Test Battery **B0018** (Zero-shot prognosis):
 | **Bayesian** | HDI Coverage | **100.00%** | All true values captured within 95% credible interval. |
 
 ### 3.2 Qualitative Analysis: Figure 1
-The comparison plot (found in `results/final_comparison_B0018.png`) shows that the Bayesian High Density Interval (HDI) widens as the battery approaches its End-of-Life (EOL). This widening signals increased model ignorance, effectively creating a **"Safety Buffer Zone"** for control systems.
+![Figure 1: Comparison of Bayesian vs LSTM Model](results/final_comparison_B0018.png)
+
+The comparison plot above shows that the Bayesian High Density Interval (HDI) widens as the battery approaches its End-of-Life (EOL). This widening signals increased model ignorance, effectively creating a **"Safety Buffer Zone"** for control systems.
 
 ## 4. Discussion & Conclusion
 The LSTM model is highly effective for capturing temporal trends when data is abundant. However, the Hierarchical Bayesian model is superior for **Safety-Critical Industrial AI** because:
