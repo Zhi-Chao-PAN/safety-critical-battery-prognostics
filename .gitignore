@@ -82,3 +82,7 @@ results/models/*.pth
 # OS specific
 .DS_Store
 Thumbs.db
+
+data/
+*.pth
+*.nc

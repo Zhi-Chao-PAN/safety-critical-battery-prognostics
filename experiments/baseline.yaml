@@ -1,10 +1,10 @@
 data:
-  processed_path: data/processed/housing.csv
-  target: price
+  processed_path: data/battery_data
+  target: RUL
 
 model:
   n_estimators: 200
 
 split:
-  test_size: 0.15   # 15% test（永不参与调参）
+  test_size: 0.15   # 15% test
   val_size: 0.15    # 15% validation

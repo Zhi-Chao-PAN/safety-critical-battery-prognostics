@@ -1,37 +1,37 @@
 # config/schema.yaml
 
 dataset:
-  path: data/processed/housing_with_spatial_clusters.csv
+  path: data/battery_data
 
 target:
-  name: price
+  name: RUL
 
 group:
-  name: spatial_cluster
+  name: battery_id
 
 features:
   numeric:
-    - median_income
-    - house_age
-    - avg_rooms
-    - avg_bedrooms
-    - population
-    - latitude
-    - longitude
+    - discharge_time
+    - decrease_in_voltage
+    - time_constant_current
+    - min_temp
+    - max_temp
 
 modeling:
   standardize:
-    - median_income
-    - price
+    - discharge_time
+    - decrease_in_voltage
+    - time_constant_current
+    - min_temp
+    - max_temp
+    - RUL
 
 bayesian:
   pooled:
-    slope: median_income
-
+    slope: discharge_time
 
   hierarchical:
     slope: 
-      - median_income
-      - house_age
-      - avg_rooms
-    group: spatial_cluster
+      - discharge_time
+      - max_temp
+    group: battery_id
