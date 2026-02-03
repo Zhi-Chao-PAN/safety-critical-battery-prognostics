@@ -15,19 +15,21 @@ class GroupConfig(BaseModel):
 class FeaturesConfig(BaseModel):
     numeric: List[str]
 
+class LSTMConfig(BaseModel):
+    window_size: int = 30
+    hidden_dim: int = 64
+    num_layers: int = 2
+    dropout: float = 0.2
+    learning_rate: float = 0.001
+    epochs: int = 100
+
+class BayesianModelConfig(BaseModel):
+    pooled: dict
+    hierarchical: dict
+
 class ModelingConfig(BaseModel):
-    standardize: List[str]
-
-class PooledConfig(BaseModel):
-    slope: str
-
-class HierarchicalConfig(BaseModel):
-    slope: List[str]
-    group: str
-
-class BayesianConfig(BaseModel):
-    pooled: PooledConfig
-    hierarchical: HierarchicalConfig
+    lstm: LSTMConfig
+    bayesian: BayesianModelConfig
 
 class AppConfig(BaseModel):
     dataset: DatasetConfig
@@ -35,21 +37,10 @@ class AppConfig(BaseModel):
     group: GroupConfig
     features: FeaturesConfig
     modeling: ModelingConfig
-    bayesian: BayesianConfig
 
 def load_config(config_path: Path = Path("config/schema.yaml")) -> AppConfig:
     """
     Load and validate configuration using Pydantic.
-    
-    Args:
-        config_path: Path to the YAML configuration file.
-        
-    Returns:
-        Validated AppConfig object.
-        
-    Raises:
-        FileNotFoundError: If config file is missing.
-        ValidationError: If config structure is invalid.
     """
     if not config_path.exists():
         raise FileNotFoundError(f"Configuration file not found at {config_path}")

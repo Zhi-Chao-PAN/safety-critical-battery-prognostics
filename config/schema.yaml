@@ -5,7 +5,7 @@ dataset:
 
 target:
   name: rul
-
+  
 group:
   name: battery_id
 
@@ -15,17 +15,19 @@ features:
     - max_temp
 
 modeling:
-  standardize:
-    - discharge_time
-    - max_temp
-    - rul
-
-bayesian:
-  pooled:
-    slope: discharge_time
-
-  hierarchical:
-    slope: 
-      - discharge_time
-      - max_temp
-    group: battery_id
+  lstm:
+    window_size: 30
+    hidden_dim: 64
+    num_layers: 2
+    dropout: 0.2
+    learning_rate: 0.001
+    epochs: 100
+  
+  bayesian:
+    pooled:
+      slope: discharge_time
+    hierarchical:
+      slope: 
+        - discharge_time
+        - max_temp
+      group: battery_id
