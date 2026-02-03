@@ -11,7 +11,7 @@
 ---
 
 ## 2. Abstract
-Prognostics and Health Management (PHM) for Lithium-ion batteries is a cornerstone of safety certification in electric mobility. While Deep Learning models (e.g., LSTMs, Transformers) achieve State-of-the-Art (SOTA) predictive accuracy, they suffer from **epistemic overconfidence**—failing to signal low confidence in out-of-distribution (OOD) scenarios. This project conducts a rigorous rigorous empirical comparison between a **Deterministic LSTM** baseline and a proposed **Hierarchical Bayesian Degradation Model** using the NASA PCoE dataset. Our results demonstrate that while LSTMs offer lower RMSE (36.53 cycles), the Bayesian framework provides **100% HDI coverage** and a quantifiable "Safety Buffer Zone," making it the superior candidate for ISO 26262 compliant systems.
+Prognostics and Health Management (PHM) for Lithium-ion batteries is a cornerstone of safety certification in electric mobility. While Deep Learning models (e.g., LSTMs, Transformers) achieve State-of-the-Art (SOTA) predictive accuracy, they suffer from **epistemic overconfidence**—failing to signal low confidence in out-of-distribution (OOD) scenarios. This project conducts a rigorous empirical comparison between a **Deterministic LSTM** baseline and a proposed **Hierarchical Bayesian Degradation Model** using the NASA PCoE dataset. Our results demonstrate that while LSTMs offer lower RMSE (36.53 cycles), the Bayesian framework provides **100% HDI coverage** and a quantifiable "Safety Buffer Zone," making it the superior candidate for ISO 26262 compliant systems.
 
 ## 3. Core Contributions
 - **Methodological**: A Hierarchical Bayesian formulation that captures both *aleatoric* (sensor noise) and *epistemic* (model) uncertainty via partial pooling.
@@ -38,18 +38,18 @@ This hierarchical structure allows the model to "borrow statistical strength" fr
 ```mermaid
 graph LR
     subgraph Data Input
-    A[NASA PCoE Dataset] -->|Feature Eng.| B(Sequences: T, V, I)
+    A[NASA PCoE Dataset] -- "Feature Eng." --> B(Sequences: T, V, I)
     end
 
     subgraph Deterministic Stream
     B --> C{LSTM Network}
-    C -->|"Dropout(0.2)"| D[Point Estimate y_hat]
+    C -- "Dropout(0.2)" --> D[Point Estimate y_hat]
     end
 
     subgraph Probabilistic Stream
     B --> E{Hierarchical Bayesian}
-    E -->|NUTS Sampler| F[Posterior Param Dist]
-    F --> G[Predictive Dist. P_y_new]
+    E -- "NUTS Sampler" --> F[Posterior Param Dist]
+    F -- "Predictive Dist" --> G[Predictive Dist. P_y_new]
     end
 
     subgraph Decision Logic
