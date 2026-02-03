@@ -43,13 +43,13 @@ graph LR
 
     subgraph Deterministic Stream
     B --> C{LSTM Network}
-    C -->|Dropout(0.2)| D[Point Estimate $\hat{y}$]
+    C -->|"Dropout(0.2)"| D[Point Estimate y_hat]
     end
 
     subgraph Probabilistic Stream
     B --> E{Hierarchical Bayesian}
-    E -->|NUTS Sampler| F[Posterior $P(\theta|D)$]
-    F --> G[Predictive Dist. $P(y^*|x^*, D)$]
+    E -->|NUTS Sampler| F[Posterior Param Dist]
+    F --> G[Predictive Dist. P_y_new]
     end
 
     subgraph Decision Logic
