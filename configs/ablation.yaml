@@ -1,0 +1,68 @@
+# Ablation study configurations
+name: "ablation_study"
+seeds: [42, 43, 44]
+device: "cpu"
+
+data:
+  data_dir: "data/battery_data"
+  datasets: ["nasa"]
+  eol_fraction: 0.7
+  rated_capacity: 2.0
+
+# Ablation configs: Each removes one component
+ablations:
+  # Full model (baseline)
+  full_model:
+    hidden_dim: 64
+    num_layers: 2
+    dropout: 0.2
+    seq_length: 30
+    epochs: 100
+
+  # No attention (remove temporal attention)
+  no_attention:
+    hidden_dim: 64
+    num_layers: 2
+    dropout: 0.2
+    seq_length: 30
+    epochs: 100
+
+  # No bidirectional
+  no_bidirectional:
+    hidden_dim: 64
+    num_layers: 2
+    dropout: 0.2
+    seq_length: 30
+    epochs: 100
+
+  # Smaller model
+  small_model:
+    hidden_dim: 32
+    num_layers: 1
+    dropout: 0.2
+    seq_length: 30
+    epochs: 100
+
+  # No dropout (no uncertainty)
+  no_dropout:
+    hidden_dim: 64
+    num_layers: 2
+    dropout: 0.0
+    seq_length: 30
+    epochs: 100
+
+  # Short sequence
+  short_seq:
+    hidden_dim: 64
+    num_layers: 2
+    dropout: 0.2
+    seq_length: 10
+    epochs: 100
+
+  # Long sequence
+  long_seq:
+    hidden_dim: 64
+    num_layers: 2
+    dropout: 0.2
+    seq_length: 50
+    epochs: 100

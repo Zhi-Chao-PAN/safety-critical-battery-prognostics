@@ -1,0 +1,63 @@
+[project]
+name = "safety-critical-battery-prognostics"
+version = "2.0.0"
+description = "Uncertainty-Aware Edge-Deployable Battery Health Management System"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+authors = [{name = "Zhichao Pan"}]
+
+dependencies = [
+    "numpy>=1.24.0",
+    "pandas>=2.0.0",
+    "scipy>=1.10.0",
+    "torch>=2.0.0",
+    "pymc>=5.0.0",
+    "arviz>=0.15.0",
+    "matplotlib>=3.7.0",
+    "seaborn>=0.12.0",
+    "scikit-learn>=1.2.0",
+    "joblib>=1.2.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "ruff>=0.1.0",
+    "mypy>=1.0",
+    "pre-commit>=3.0",
+]
+edge = [
+    "onnx>=1.14.0",
+    "onnxruntime>=1.15.0",
+]
+ui = [
+    "streamlit>=1.25.0",
+    "plotly>=5.15.0",
+]
+tracking = [
+    "mlflow>=2.5.0",
+    "optuna>=3.2.0",
+]
+
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --tb=short"
+
+[tool.ruff]
+target-version = "py310"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
