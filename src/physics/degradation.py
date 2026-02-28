@@ -47,12 +47,12 @@ class PhysicsModel:
     def fit(self, cycles: np.ndarray, capacities: np.ndarray, battery_id: str = "global") -> dict[str, float]:
         """Fit empirical fade model to one battery's data."""
         try:
-            # Ensure non-negative cycles for fitting
-            safe_cycles = np.abs(cycles)
+            safe_cycles = np.maximum(np.abs(cycles), 1e-6)
+            y_max = max(float(np.max(np.abs(capacities))), 1.0)
             popt, _ = curve_fit(
                 empirical_fade, safe_cycles, capacities,
-                p0=[capacities[0], 0.01, 0.001],
-                bounds=([0, 0, 0], [10, 1, 0.1]),
+                p0=[capacities[0], 0.01 * y_max, 0.001 * y_max],
+                bounds=([0, 0, 0], [y_max * 5, y_max, y_max * 0.1]),
                 maxfev=5000,
             )
             params = {"q0": float(popt[0]), "a": float(popt[1]), "b": float(popt[2])}
