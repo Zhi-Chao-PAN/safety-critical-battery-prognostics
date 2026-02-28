@@ -112,10 +112,32 @@ class BayesianNNModel(BatteryModel):
         self.n_samples = n_samples
         self.device = device
         self.model: BayesNet | None = None
+        self._x_mean: np.ndarray | None = None
+        self._x_std: np.ndarray | None = None
+        self._y_mean: float = 0.0
+        self._y_std: float = 1.0
+
+    def _normalize_x(self, X: np.ndarray, fit: bool = False) -> np.ndarray:
+        if fit:
+            self._x_mean = X.mean(axis=0)
+            self._x_std = X.std(axis=0) + 1e-8
+        return (X - self._x_mean) / self._x_std
+
+    def _normalize_y(self, y: np.ndarray, fit: bool = False) -> np.ndarray:
+        if fit:
+            self._y_mean = float(y.mean())
+            self._y_std = float(y.std()) + 1e-8
+        return (y - self._y_mean) / self._y_std
+
+    def _denormalize_y(self, y: np.ndarray) -> np.ndarray:
+        return y * self._y_std + self._y_mean
 
     def fit(self, X: np.ndarray, y: np.ndarray, **kwargs: Any) -> "BayesianNNModel":
-        X_t = torch.tensor(X, dtype=torch.float32).to(self.device)
-        y_t = torch.tensor(y, dtype=torch.float32).unsqueeze(1).to(self.device)
+        X_norm = self._normalize_x(X, fit=True)
+        y_norm = self._normalize_y(y, fit=True)
+
+        X_t = torch.tensor(X_norm, dtype=torch.float32).to(self.device)
+        y_t = torch.tensor(y_norm, dtype=torch.float32).unsqueeze(1).to(self.device)
 
         self.model = BayesNet(self.input_dim, self.hidden_dim).to(self.device)
         optimizer = torch.optim.Adam(self.model.parameters(), lr=self.lr)
@@ -150,7 +172,8 @@ class BayesianNNModel(BatteryModel):
         if self.model is None:
             raise RuntimeError("Not fitted.")
 
-        X_t = torch.tensor(X, dtype=torch.float32).to(self.device)
+        X_norm = self._normalize_x(X)
+        X_t = torch.tensor(X_norm, dtype=torch.float32).to(self.device)
 
         self.model.train()  # Enable stochastic forward passes
         preds = []
@@ -160,6 +183,8 @@ class BayesianNNModel(BatteryModel):
         self.model.eval()
 
         preds = np.stack(preds)
+        # Denormalize
+        preds = self._denormalize_y(preds)
         mean = preds.mean(axis=0)
         std = preds.std(axis=0)
         return mean, mean - 1.96 * std, mean + 1.96 * std
@@ -168,25 +193,32 @@ class BayesianNNModel(BatteryModel):
         """Return raw samples from posterior predictive."""
         if self.model is None:
             raise RuntimeError("Not fitted.")
-        X_t = torch.tensor(X, dtype=torch.float32).to(self.device)
+        X_norm = self._normalize_x(X)
+        X_t = torch.tensor(X_norm, dtype=torch.float32).to(self.device)
         self.model.train()
         samples = []
         with torch.no_grad():
             for _ in range(n_samples):
                 samples.append(self.model(X_t).cpu().numpy().flatten())
         self.model.eval()
-        return np.stack(samples)
+        return self._denormalize_y(np.stack(samples))
 
     def save(self, path: str | Path) -> None:
         Path(path).parent.mkdir(parents=True, exist_ok=True)
         torch.save({"state": self.model.state_dict() if self.model else None,
-                     "params": self.get_params()}, path)
+                     "params": self.get_params(),
+                     "x_mean": self._x_mean, "x_std": self._x_std,
+                     "y_mean": self._y_mean, "y_std": self._y_std}, path)
 
     def load(self, path: str | Path) -> "BayesianNNModel":
         d = torch.load(path, map_location=self.device, weights_only=False)
         self.model = BayesNet(self.input_dim, self.hidden_dim).to(self.device)
         if d["state"]:
             self.model.load_state_dict(d["state"])
+        self._x_mean = d.get("x_mean")
+        self._x_std = d.get("x_std")
+        self._y_mean = d.get("y_mean", 0.0)
+        self._y_std = d.get("y_std", 1.0)
         return self
 
     def get_params(self) -> dict[str, Any]:
