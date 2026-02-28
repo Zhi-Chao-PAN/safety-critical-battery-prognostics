@@ -11,8 +11,8 @@ data/battery_data/*.mat
 data/external/
 
 # Outputs
-results/
-figures/
+# results/
+# figures/
 checkpoints/
 logs/
 *.onnx
