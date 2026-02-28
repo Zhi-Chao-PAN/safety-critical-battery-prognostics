@@ -24,8 +24,8 @@ R_GAS = 8.314
 
 
 def empirical_fade(n: np.ndarray, q0: float, a: float, b: float) -> np.ndarray:
-    """Q(n) = Q0 - a*sqrt(n) - b*n"""
-    return q0 - a * np.sqrt(n) - b * n
+    """Q(n) = Q0 - a*sqrt(|n|) - b*n"""
+    return q0 - a * np.sqrt(np.abs(n)) - b * n
 
 
 def arrhenius_rate(T_celsius: float, A: float = 1.0, Ea: float = 30000.0) -> float:
@@ -47,8 +47,10 @@ class PhysicsModel:
     def fit(self, cycles: np.ndarray, capacities: np.ndarray, battery_id: str = "global") -> dict[str, float]:
         """Fit empirical fade model to one battery's data."""
         try:
+            # Ensure non-negative cycles for fitting
+            safe_cycles = np.abs(cycles)
             popt, _ = curve_fit(
-                empirical_fade, cycles, capacities,
+                empirical_fade, safe_cycles, capacities,
                 p0=[capacities[0], 0.01, 0.001],
                 bounds=([0, 0, 0], [10, 1, 0.1]),
                 maxfev=5000,

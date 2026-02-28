@@ -23,8 +23,7 @@ from src.data.unified_loader import UnifiedDataLoader
 from src.data.validator import DataValidator
 from src.data.splitter import DataSplitter
 from src.features.extractor import FeatureExtractor
-from src.models import LSTMModel, GRUModel, TCNModel, TransformerModel, PINNModel, BayesianNNModel, DeepEnsemble
-from src.models.cnn1d_model import CNN1DModel, BayesianNNModel, CNN1DModel
+from src.models import LSTMModel, GRUModel, TCNModel, TransformerModel, PINNModel, BayesianNNModel, DeepEnsemble, CNN1DModel
 from src.uncertainty.scoring import compute_all_metrics
 from src.training.pipeline import TrainingPipeline
 from src.evaluation.benchmark import BenchmarkRunner
@@ -63,15 +62,15 @@ def build_models(args, input_dim: int) -> dict:
     """Build model zoo from args."""
     common = dict(input_dim=input_dim, seq_length=args.seq_length,
                   epochs=args.epochs, device=args.device)
+    common_no_seq = dict(input_dim=input_dim, epochs=args.epochs, device=args.device)
     registry = {
         "lstm": lambda: LSTMModel(**common, hidden_dim=64, num_layers=2),
         "gru": lambda: GRUModel(**common, hidden_dim=64, num_layers=2),
         "tcn": lambda: TCNModel(**common, num_channels=[32, 32, 64, 64]),
         "cnn1d": lambda: CNN1DModel(**common, channels=[32, 64, 64]),
         "transformer": lambda: TransformerModel(**common, d_model=64, nhead=4, num_layers=2),
-        "pinn": lambda: PINNModel(**common, hidden_dim=64),
-        "bayesian_nn": lambda: BayesianNNModel(input_dim=input_dim, hidden_dim=64,
-                                                epochs=args.epochs, device=args.device),
+        "pinn": lambda: PINNModel(**common_no_seq, hidden_dim=64),
+        "bayesian_nn": lambda: BayesianNNModel(**common_no_seq, hidden_dim=64),
     }
     models = {}
     for name in args.models:
