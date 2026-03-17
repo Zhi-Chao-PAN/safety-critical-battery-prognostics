@@ -1,63 +1,56 @@
-# Contributing to Spatial Bayesian vs Deep Learning
+# Contributing to Safety-Critical Battery Prognostics
 
-Thank you for your interest in contributing to this research project!
+Thank you for your interest in contributing to our research on battery health management! This project follows rigorous academic standards and welcomes contributions that enhance reproducibility, extend methodology, or improve documentation.
 
-## Development Setup
+## 🎯 Contribution Guidelines
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/Zhi-Chao-PAN/safety-critical-battery-prognostics.git
-   cd safety-critical-battery-prognostics
-   ```
+### 1. Code Contributions
+- **Style**: Follow Google Python Style Guide
+- **Testing**: Include unit tests for new functionality
+- **Documentation**: Update docstrings and README as needed
+- **Reproducibility**: Ensure all changes maintain experiment reproducibility
 
-2. **Create virtual environment**
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
+### 2. Research Contributions
+- **Methodology**: Propose improvements to Bayesian or deep learning approaches
+- **Experiments**: Add new datasets or evaluation metrics
+- **Analysis**: Extend statistical analysis or visualization
 
-3. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
+### 3. Documentation
+- **Technical Reports**: Improve existing documentation
+- **Tutorials**: Create Jupyter notebook tutorials
+- **API Docs**: Enhance function documentation
 
-## Running Tests
+## 🚀 Development Workflow
 
-```bash
-# Run all tests
-pytest
+1. **Fork** the repository
+2. **Create a branch** (`git checkout -b feature/amazing-feature`)
+3. **Commit changes** (`git commit -m 'Add amazing feature'`)
+4. **Push to branch** (`git push origin feature/amazing-feature`)
+5. **Open a Pull Request**
 
-# Run with coverage
-pytest --cov=src
+## 📋 Pull Request Requirements
 
-# Run specific test file
-pytest tests/test_schema.py -v
-```
+- Clear description of changes
+- Link to related issues (if any)
+- Updated tests and documentation
+- Verification of reproducibility
 
-## Code Style
+## 🧪 Testing Requirements
 
-- Use type annotations for function parameters and return values
-- Include docstrings for all public functions (Google style)
-- Follow PEP 8 guidelines
-- Maximum line length: 100 characters
+All contributions must include:
+- Unit tests for new functionality
+- Integration tests for critical paths
+- Reproducibility verification
+- Performance benchmarks (if applicable)
 
-## Project Structure
+## 📚 Code of Conduct
 
-```
-├── config/           # Configuration files (schema.yaml)
-├── data/             # Dataset files (raw, processed)
-├── notebooks/        # Jupyter notebooks for exploration
-├── results/          # Model outputs, figures, metrics
-├── src/              # Source code
-│   ├── utils/        # Utility modules
-│   └── *.py          # Training and evaluation scripts
-└── tests/            # Unit tests
-```
+This project adheres to the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code.
 
-## Reporting Issues
+## 📬 Questions?
 
-Please include:
-- Python version
-- Package versions (`pip freeze`)
-- Full error traceback
-- Steps to reproduce
+- Open an issue for technical questions
+- Email the maintainer for research collaboration
+- Join discussions in the GitHub Discussions tab
+
+Thank you for contributing to advancing battery health management research! 🔋
