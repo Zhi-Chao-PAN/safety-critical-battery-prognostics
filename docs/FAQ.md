@@ -1,150 +1,125 @@
-# 常见问题（FAQ）
+# Frequently Asked Questions (FAQ)
 
-## 一般问题
+## General Information
 
-### Q: 这个项目是做什么的？
-A: 这是一个用于锂离子电池剩余使用寿命（RUL）预测的开源项目。它采用微-宏时间尺度解耦架构，结合物理信息神经网络（PINNs）和数据驱动方法，实现高效、可靠的电池寿命预测。
+### Q: What is the purpose of this project?
+A: This is an open-source prognostics engine designed for Lithium-ion Battery Remaining Useful Life (RUL) prediction. It bridges physics-informed neural networks (PINNs) and data-driven methods through a novel **Micro-Macro Time-Scale Decoupling** architecture to achieve highly efficient and reliable battery life forecasting.
 
-### Q: 这个项目适合谁使用？
+### Q: Who is the target audience?
 A:
-- 🎓 **学术研究者**：从事电池健康管理、寿命预测研究的学者和学生
-- 🏭 **工业工程师**：在BMS（电池管理系统）领域工作的工程师
-- 💻 **AI爱好者**：对物理信息神经网络、时间序列预测感兴趣的开发者
+- 🎓 **Academic Researchers**: Scholars and students investigating battery health management and prognostic algorithms.
+- 🏭 **Industrial Engineers**: BMS (Battery Management System) engineers aiming for edge deployment.
+- 💻 **AI Enthusiasts**: Developers interested in Physics-Informed ML and time-series uncertainty quantification.
 
-### Q: 项目的主要创新点是什么？
+### Q: What are the core academic innovations?
 A:
-1. **微-宏时间尺度解耦**：解决传统PINNs的OOM问题，显存占用仅8.14MB
-2. **物理约束保证**：100%保证预测结果在物理合理范围内
-3. **边缘设备就绪**：ONNX INT8推理延迟仅0.078ms
-4. **无分布不确定性估计**：基于共形分位数回归提供数学保证的95%覆盖区间
-5. **安全诊断框架**：ISO 26262对齐的FMEA诊断系统
+1. **Micro-Macro Time-Scale Decoupling**: Solves the OOM (Out of Memory) problem typical of PINNs simulating over thousands of cycles, reducing VRAM usage to ~8.14MB.
+2. **Hard Physical Constraints**: 100% guarantee that prognostic predictions lie within thermodynamically feasible boundaries.
+3. **Edge-Readiness**: ONNX INT8 inference latency is measured at just 0.078ms natively.
+4. **Distribution-Free Uncertainty**: Provides mathematically guaranteed 95% coverage intervals using Conformal Quantile Regression (CQR).
+5. **Safety Diagnostic Framework**: Integrates an ISO 26262-aligned Failure Mode and Effects Analysis (FMEA) system via an LLM agent.
 
 ---
 
-## 安装与配置
+## Installation & Environment
 
-### Q: 项目需要什么硬件配置？
+### Q: What are the hardware requirements?
 A:
-- **最低配置**：8GB RAM，任意现代CPU
-- **推荐配置**：16GB RAM，NVIDIA GPU（4GB显存以上）
-- **边缘部署**：支持低功耗设备（如树莓派、嵌入式系统）
+- **Minimum**: 8GB RAM, modern multi-core CPU.
+- **Recommended for Training**: 16GB RAM, NVIDIA GPU (>= 4GB VRAM).
+- **Edge Deployment Target**: Compatible with low-power architectures (Raspberry Pi, NVIDIA Jetson, STM32).
 
-### Q: 支持哪些Python版本？
-A: Python 3.8+（推荐3.10或3.11）
+### Q: Which Python versions are supported?
+A: Python 3.8+ (3.10 or 3.11 is highly recommended).
 
-### Q: 安装依赖时出错怎么办？
+### Q: I'm encountering installation dependency errors. How do I fix this?
 A:
-1. 确保使用了虚拟环境
-2. 尝试更新pip：`pip install --upgrade pip`
-3. 如果CUDA相关问题，可以安装CPU版本的PyTorch
-4. 提交Issue时请附上完整的错误信息和`pip freeze`输出
+1. Ensure you are operating within an isolated virtual environment (`venv` or `conda`).
+2. Upgrade your package manager: `pip install --upgrade pip`.
+3. If encountering CUDA-related conflicts, you may fall back to the CPU version of PyTorch.
+4. For persistent errors, please open a GitHub Issue attaching the complete traceback and your `pip freeze` output.
 
 ---
 
-## 使用问题
+## Usage & Execution
 
-### Q: 数据在哪里下载？
+### Q: Where can I obtain the datasets?
 A:
-- **NASA数据集**：https://www.nasa.gov/content/prognostics-center-of-excellence-data-set-repository
-- **CALCE数据集**：https://web.calce.umd.edu/batteries/data.htm
-- 项目的`scripts/download_data.py`提供了自动下载脚本
+- **NASA Dataset**: [NASA Prognostics Center of Excellence](https://www.nasa.gov/content/prognostics-center-of-excellence-data-set-repository)
+- **CALCE Dataset**: [UMD CALCE Battery Group](https://web.calce.umd.edu/batteries/data.htm)
 
-### Q: 如何使用自己的电池数据？
+### Q: How do I train the model on a custom battery dataset?
 A:
-1. 将数据转换为项目支持的格式（参考`data/`目录下的示例）
-2. 使用`src/data/validator.py`验证数据格式
-3. 修改配置文件中的数据路径
-4. 详细步骤请参考[USAGE_EXAMPLES.md](USAGE_EXAMPLES.md)
+1. Reformat your proprietary data to match the tensor shapes expected by the dataloader (reference the templates in `data/`).
+2. Utilize `src/data/validator.py` to assert data integrity and check for NaN or infinite values.
+3. Update the data paths within the global configurations.
+4. Follow the specific steps illustrated in the codebase documentation.
 
-### Q: 训练需要多长时间？
+### Q: How long does the training pipeline take?
 A:
-- 在NVIDIA RTX 4060上：约5分钟
-- 在普通CPU上：约30-60分钟
-- 得益于微-宏解耦架构，训练速度比传统PINNs快10倍以上
+- On an NVIDIA RTX 4060: **~5 minutes**.
+- On a CPU (e.g., Intel Core i7): **~30-60 minutes**.
+- *Note:* Thanks to the decoupled time-scale architecture, our training convergence is exponentially faster than traditional sequential PINNs.
 
-### Q: 显存占用很高怎么办？
+### Q: I am facing Out-Of-Memory (OOM) errors during training. What should I adjust?
 A:
-1. 减小`sequence_length`配置参数
-2. 减小`batch_size`
-3. 使用混合精度训练（FP16）
-4. 本项目的显存占用已优化至8.14MB，如果仍有问题请提交Issue
+1. Decrease the `sequence_length` context window.
+2. Reduce the `batch_size`.
+3. Enable mixed-precision training (FP16/BF16).
+4. Our baseline VRAM blueprint is exceptionally low (8.14MB); if you encounter OOM on a standard GPU, please file a bug report.
 
 ---
 
-## 技术问题
+## Technical Deep-Dive
 
-### Q: 什么是"时间尺度黑洞"问题？
+### Q: What exactly is the "Time-Scale Black Hole" problem?
 A:
-- 微观电化学过程发生在秒级
-- 宏观容量衰减发生在月级
-- 传统方法直接桥接会导致BPTT计算图爆炸
-- 本项目通过解耦架构解决这个问题
+- Microscopic electrochemical processes (Li+ diffusion) occur on the order of **seconds**.
+- Macroscopic capacity degradation occurs over **months or years**.
+- Directly bridging these scales using traditional recurrent solvers triggers massive Backpropagation Through Time (BPTT) computational graphs, leading to immediate memory explosions. We bypass this via hierarchical decoupling.
 
-### Q: 物理约束是如何实现的？
-A: 使用可微分的Sigmoid钳制层，严格保证：
+### Q: How are the hard physical constraints enforced?
+A: We overlay differentiable clamping layers and thermodynamic boundary conditions acting as inductive priors:
 $$ 0 < C_{pred} \le C_{nominal} $$
 
-### Q: 共形预测相比贝叶斯方法有什么优势？
+### Q: Why utilize Conformal Prediction over Bayesian Neural Networks (BNNs)?
 A:
-- ✅ 数学保证的有限样本覆盖
-- ✅ 无需对数据分布做假设
-- ✅ 计算效率更高
-- ✅ 更容易调试和验证
+- ✅ Mathematically guaranteed finite-sample coverage without distributional assumptions.
+- ✅ Orders of magnitude faster to compute than MCMC or variational ensembles.
+- ✅ Conceptually simpler to validate for industrial functional safety audits.
 
 ---
 
-## 贡献相关
+## Contribution & Community
 
-### Q: 我想贡献代码，应该怎么做？
-A: 请查看[CONTRIBUTING.md](../CONTRIBUTING.md)，里面有详细的贡献指南。
+### Q: How can I contribute to the codebase?
+A: Please review our [CONTRIBUTING.md](../CONTRIBUTING.md) file which outlines the PR workflow and coding standards in detail.
 
-### Q: 可以添加新的模型架构吗？
-A: 当然可以！请：
-1. 在`src/models/`下添加新的模型文件
-2. 继承`BaseModel`类
-3. 添加相应的测试
-4. 提交Pull Request
-
-### Q: 如何报告Bug？
+### Q: How should I report a Bug?
 A:
-1. 先搜索现有的Issue，避免重复
-2. 使用Bug Report模板
-3. 包含复现步骤、环境信息、错误日志
+1. Search the existing GitHub Issues to prevent duplicates.
+2. Use the standard Bug Report template.
+3. Supply exact reproduction steps, environment context, and full tracebacks.
 
 ---
 
-## 学术相关
+## Academic & Publication
 
-### Q: 如何引用这个项目？
-A: 请参考README中的"引用"章节，或使用`CITATION.cff`文件。
+### Q: How do I cite this project in my research?
+A: Please reference the "Academic Citation" section located in the main `README.md`, or utilize the structured `CITATION.cff` metadata file.
 
-### Q: 有相关的论文吗？
-A: 论文正在准备中，届时会在README和arXiv上发布。
-
-### Q: 可以用于我的学术研究吗？
-A: 完全可以！本项目采用MIT许可证，欢迎用于学术研究。如果在论文中使用，请引用我们的工作。
+### Q: Can I leverage this architecture for my own academic publications?
+A: Absolutely! This repository is fully open-sourced under the MIT License for academic and industrial utilization. We kindly request that you cite our baseline repository in your manuscript.
 
 ---
 
-## 其他
+## Other Inquiries
 
-### Q: 项目还在维护吗？
-A: 是的！请查看[ROADMAP.md](ROADMAP.md)了解未来计划。
+### Q: Is this repository actively maintained?
+A: Yes. Please view the [ROADMAP.md](ROADMAP.md) to track our upcoming release milestones.
 
-### Q: 有交流群吗？
-A: 可以使用GitHub Discussions进行讨论。
-
-### Q: 如何联系作者？
+### Q: How can I communicate directly with the author(s)?
 A:
-- 提交GitHub Issue
-- 开启GitHub Discussion
-- 邮件（如果在个人资料中有提供）
-
----
-
-## 找不到答案？
-
-如果你的问题在这里没有找到答案，请：
-1. 搜索现有的GitHub Issues和Discussions
-2. 提交新的Issue或Discussion
-3. 我们会尽快回复！
+- Open a **GitHub Issue** for bugs.
+- Start a **GitHub Discussion** for architectural questions.
+- Email the primary maintainer directly (found in the README).

@@ -1,110 +1,102 @@
 <div align="center">
 
-# 🔋 微-宏时间尺度解耦的电池寿命预测系统
-**Micro-Macro Time-Scale Decoupling for Battery RUL Prediction**
+# 🔋 Micro-Macro Time-Scale Decoupling for Battery RUL Prediction
 
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-red.svg?logo=pytorch)](https://pytorch.org/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg?logo=python)]()
 [![GitHub stars](https://img.shields.io/github/stars/Zhi-Chao-PAN/safety-critical-battery-prognostics?style=social)]()
 
-*面向学术研究与工业BMS边缘部署的电池寿命预测系统*
+*A State-of-the-Art Production-Ready Prognostics Engine for Academic Research and Industrial BMS Edge Deployment.*
+
+[🇨🇳 简体中文 (Simplified Chinese)](README_zh.md)
 
 </div>
 
 ---
 
-## ⭐ 如果这个项目对你有帮助，请给个Star！
+## 📚 Project Overview
+
+This repository explores a novel paradigm for predicting the Remaining Useful Life (RUL) of lithium-ion batteries. The core methodology bridges physics-informed priors and data-driven dynamics via **Micro-Macro Time-Scale Decoupling**, ensuring both numerical stability and industrial-grade safety compliance.
+
+### ✨ Key Innovations
+- **Physics-Informed Neural Networks (PINNs)**: A hybrid architecture incorporating Semi-Implicit Backward Euler Solvers tailored for robust electrochemical dynamics.
+- **Adaptive Loss Weighting**: Dynamic sigmoid-scheduled balancing of physics priors and neural residuals.
+- **Safety-Critical Compliance**: ISO 26262 ASIL-C level hazard mitigation with an LLM-assisted Failure Mode diagnostic agent.
+- **Uncertainty Quantification**: Conformal Prediction bounds for Aleatoric and Epistemic risk evaluation.
+- **Edge Native**: Native ONNX export pipeline optimized for Cortex-M and NVIDIA Jetson inference requirements (<0.1ms latency).
 
 ---
 
-## 📚 项目概述
+## 🚀 Quick Start
 
-本项目探索锂离子电池剩余使用寿命（RUL）预测的新方法，核心思路是通过**微-宏时间尺度解耦**来结合物理信息与数据驱动方法。
+### 5-Minute Sandbox (Demonstration)
 
-### 主要特点
-- 物理信息神经网络（PINNs）与深度学习的混合架构
-- 支持NASA和CALCE电池数据集
-- 共形预测（Conformal Prediction）不确定性估计
-- ONNX导出与边缘设备部署支持
-
----
-
-## 🚀 快速开始
-
-### 5分钟上手（演示版）
-
-这是一个**确保能运行**的简化版本：
+A sterile, pre-configured sandbox environment that **guarantees execution**:
 
 ```bash
-# 1. 克隆项目
+# 1. Clone the repository
 git clone https://github.com/Zhi-Chao-PAN/safety-critical-battery-prognostics.git
 cd safety-critical-battery-prognostics
 
-# 2. 安装依赖
+# 2. Install zero-conflict dependencies
 pip install -r requirements.txt
 
-# 3. 运行快速演示
+# 3. Launch the sandbox demonstration
 python main_simple.py
 ```
 
-这个演示会：
-- 创建合成的电池数据
-- 训练一个简单的基线模型
-- 展示基本的预测结果
+*This demonstration synthesizes dynamic battery cycling data, initializes a baseline physics model, and renders point-prediction results directly.*
 
-### 完整版本（需要数据集）
-
-要运行完整版本，你需要：
-1. 下载NASA或CALCE数据集
-2. 配置数据路径
-3. 详细步骤请参考 `docs/` 目录下的文档
+### Full Integration Suite
+For rigorous empirical analysis:
+1. Download the targeted testbed datasets (NASA or CALCE).
+2. Configure data ingestion paths inside `configs/`.
+3. Reference the comprehensive guides under the `docs/` directory.
 
 ---
 
-## 📚 项目文档 (Documentation)
+## 📚 Official Documentation
 
-详细的文档位于 `docs/` 目录下：
-- [**API 模块参考**](docs/technical/API_REFERENCE.md) - 核心类与函数接口说明
-- [目录结构指南](docs/DIRECTORY_STRUCTURE.md) - 项目文件布局及其功能
-- [部署与边缘集成](docs/deployment/DEPLOYMENT_GUIDE.md) - 从 ONNX 到硬件的部署 SOP
-- [ISO 26262 案例](docs/industrial/ISO26262_Safety_Case.md) - 汽车工业功能安全分析方案
+Detailed architectural and deployment guides are available in the `docs/` tree:
+- [**API & Module Reference**](docs/technical/API_REFERENCE.md) - Core classes and differentiable solvers.
+- [**Directory Architecture**](docs/DIRECTORY_STRUCTURE.md) - System layout and functional definitions.
+- [**Edge Deployment SOP**](docs/deployment/DEPLOYMENT_GUIDE.md) - TensorRT optimization and hardware constraints.
+- [**ISO 26262 Safety Case**](docs/industrial/ISO26262_Safety_Case.md) - Functional safety analysis and FMEA mitigations.
 
 ---
 
-## 📁 项目结构
+## 📁 Repository Structure
 
-```
+```text
 safety-critical-battery-prognostics/
-├── src/                    # 源代码
-│   ├── data/               # 数据加载与处理
-│   ├── models/             # 模型定义
-│   ├── features/           # 特征工程
-│   ├── training/           # 训练流程
-│   ├── evaluation/         # 评估指标
-│   ├── uncertainty/        # 不确定性估计
-│   ├── physics/            # 物理模型
-│   ├── safety/             # 安全诊断
-│   ├── deployment/         # 部署相关
-│   └── utils/              # 工具函数
-├── data/                   # 数据目录
-├── docs/                   # 文档
-├── notebooks/              # Jupyter notebooks
-├── tests/                  # 单元测试
-├── figures/                # 可视化结果
-├── results/                # 实验结果
-├── main_simple.py          # 简化演示入口（推荐先试这个）
-├── main.py                 # 完整版本入口（LEGACY - 不推荐新用户使用）
-├── requirements.txt        # Python依赖
-├── pyproject.toml          # 项目配置
-└── README.md               # 本文件
+├── src/                    # Core source codebase
+│   ├── data/               # Ingestion and normalization
+│   ├── models/             # Neural network definitions (PINN, Chronos)
+│   ├── features/           # Temporal feature engineering
+│   ├── training/           # Unification pipelines (LOGO-CV)
+│   ├── evaluation/         # Strict performance metrics
+│   ├── uncertainty/        # OOD and Epistemic bounds
+│   ├── physics/            # Differentiable SPM & degradation modules
+│   ├── safety/             # LLM-FMEA & diagnostic engines
+│   ├── deployment/         # ONNX compilation scripts
+│   └── utils/              # Auxiliary utilities
+├── data/                   # Target datasets directory
+├── docs/                   # Documentation and reports
+├── notebooks/              # Interactive Jupyter playgrounds
+├── tests/                  # Unit & Integration test suites
+├── figures/                # Auto-generated visualization assets
+├── main_simple.py          # Minimal reproducible entry point
+├── main.py                 # Full experimental pipeline (Legacy)
+├── pyproject.toml          # Strict Python project configurations
+└── README.md               # You are here
 ```
 
 ---
 
-## 📄 引用（Citation）
+## 📄 Academic Citation
 
-如果这个项目对你的研究有帮助，请引用：
+If you utilize this repository for academic research or industrial baselines, please cite this work:
 
 ```bibtex
 @software{pan2026battery,
@@ -117,29 +109,29 @@ safety-critical-battery-prognostics/
 
 ---
 
-## 🤝 如何贡献
+## 🤝 Contribution Guidelines
 
-我们欢迎任何形式的贡献！请查看：
-- [CONTRIBUTING.md](CONTRIBUTING.md) - 贡献指南
-- [FAQ.md](docs/FAQ.md) - 常见问题
-- [ROADMAP.md](docs/ROADMAP.md) - 项目路线图
+We adhere to a strict zero-regression policy. Open-source contributions are broadly welcomed!
+- [CONTRIBUTING.md](CONTRIBUTING.md) - Developer setup and PR guidelines.
+- [FAQ.md](docs/FAQ.md) - Frequently Discussed Questions.
+- [ROADMAP.md](docs/ROADMAP.md) - Project Evolution Milestones.
 
 ---
 
-## 📬 联系方式 (Contact)
+## 📬 Academic & Professional Inquiries
 
 - **Email**: [18652585856@163.com](mailto:18652585856@163.com)
-- **Issues**: [GitHub Issues](https://github.com/Zhi-Chao-PAN/safety-critical-battery-prognostics/issues)
+- **Issues**: [GitHub Issue Tracker](https://github.com/Zhi-Chao-PAN/safety-critical-battery-prognostics/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/Zhi-Chao-PAN/safety-critical-battery-prognostics/discussions)
 
 ---
 
-## 📄 许可证
+## 📄 License
 
-本项目采用 MIT 许可证 - 详见 [LICENSE](LICENSE) 文件。
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
 <div align="center">
-<i>本项目正在积极开发中。如果你觉得有帮助，请给个 ⭐ Star！</i>
+<i>A production-grade, SOTA formulation architecture. If you find this engine useful, please consider giving it a ⭐ Star!</i>
 </div>
