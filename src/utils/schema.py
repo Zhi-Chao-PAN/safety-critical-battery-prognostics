@@ -7,14 +7,15 @@ schema configuration file (config/schema.yaml), ensuring consistent
 feature definitions across all models.
 """
 
-from typing import Dict, Any
-import yaml
 from pathlib import Path
+from typing import Any
+
+import yaml
 
 SCHEMA_PATH = Path("config/schema.yaml")
 
 
-def load_schema(schema_path: Path = SCHEMA_PATH) -> Dict[str, Any]:
+def load_schema(schema_path: Path = SCHEMA_PATH) -> dict[str, Any]:
     """
     Load the project schema configuration from YAML file.
     
@@ -43,7 +44,7 @@ def load_schema(schema_path: Path = SCHEMA_PATH) -> Dict[str, Any]:
     if not schema_path.exists():
         raise FileNotFoundError(f"Schema not found: {schema_path}")
 
-    with open(schema_path, "r") as f:
+    with open(schema_path) as f:
         schema = yaml.safe_load(f)
 
     return schema

@@ -9,9 +9,10 @@ from pathlib import Path
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 
+import matplotlib
 import numpy as np
 import pandas as pd
-import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
@@ -22,8 +23,6 @@ from src.ui.visualization import (
     plot_degradation_curves,
     plot_feature_correlation,
     plot_model_comparison,
-    plot_calibration,
-    plot_ablation_summary,
 )
 
 

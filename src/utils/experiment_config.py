@@ -6,7 +6,6 @@ YAML-based configs for reproducible experiments.
 import logging
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
 
 import yaml
 

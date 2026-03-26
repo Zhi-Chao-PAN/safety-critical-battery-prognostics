@@ -3,12 +3,13 @@ message: "If you use this software in your research, please cite it as below."
 authors:
 - family-names: "Pan"
   given-names: "Zhi-Chao"
-title: "Safety-Critical Battery Prognostics: Bayesian vs Deterministic Approaches"
-version: 1.0.0-submission
-date-released: 2026-02-02
+title: "Micro-Macro Time-Scale Decoupling for Battery RUL Prediction"
+version: 2.0.0
+date-released: 2026-03-26
 url: "https://github.com/Zhi-Chao-PAN/safety-critical-battery-prognostics"
 keywords:
   - "prognostics-health-management"
   - "lithium-ion-batteries"
   - "uncertainty-quantification"
-  - "bayesian-inference"
+  - "physics-informed-neural-networks"
+  - "battery-management-systems"

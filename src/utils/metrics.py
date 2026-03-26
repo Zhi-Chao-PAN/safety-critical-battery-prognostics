@@ -1,6 +1,7 @@
+
 import numpy as np
 import scipy.stats as stats
-from typing import Tuple, Dict
+
 
 def calculate_nll(y_true: np.ndarray, y_pred_mean: np.ndarray, y_pred_std: np.ndarray) -> float:
     """
@@ -27,12 +28,12 @@ def calculate_mpiw(y_lower: np.ndarray, y_upper: np.ndarray) -> float:
     return float(np.mean(y_upper - y_lower))
 
 def get_comprehensive_metrics(
-    y_true: np.ndarray, 
-    y_pred_mean: np.ndarray, 
+    y_true: np.ndarray,
+    y_pred_mean: np.ndarray,
     y_pred_std: np.ndarray = None,
-    y_lower: np.ndarray = None, 
+    y_lower: np.ndarray = None,
     y_upper: np.ndarray = None
-) -> Dict[str, float]:
+) -> dict[str, float]:
     """
     Compute a full suite of deterministic and probabilistic metrics.
     """
@@ -40,18 +41,18 @@ def get_comprehensive_metrics(
     mse = np.mean((y_true - y_pred_mean)**2)
     rmse = np.sqrt(mse)
     mae = np.mean(np.abs(y_true - y_pred_mean))
-    
+
     metrics = {
         "RMSE": float(rmse),
         "MAE": float(mae)
     }
-    
+
     # Probabilistic (valid only if uncertainty is provided)
     if y_pred_std is not None:
         metrics["NLL"] = calculate_nll(y_true, y_pred_mean, y_pred_std)
-        
+
     if y_lower is not None and y_upper is not None:
         metrics["PICP"] = calculate_picp(y_true, y_lower, y_upper)
         metrics["MPIW"] = calculate_mpiw(y_lower, y_upper)
-        
+
     return metrics

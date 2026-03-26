@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.9", "3.10"]
+        python-version: ["3.10", "3.11"]
 
     steps:
     - uses: actions/checkout@v3
@@ -29,31 +29,33 @@ jobs:
         
     - name: Lint with flake8
       run: |
-        # stop the build if there are Python syntax errors or undefined names
         flake8 src --count --select=E9,F63,F7,F82 --show-source --statistics
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 src --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
         
     - name: Type Check with mypy
       run: |
         mypy src --ignore-missing-imports
         
-    - name: Test with pytest
-      # Create a dummy test if none exists yet to ensure pass
+    - name: Test imports
       run: |
-        mkdir -p tests
-        echo "def test_dummy(): assert True" > tests/test_dummy.py
-        pytest tests/
-
-    - name: Run Rigorous Evaluation (Report Generation)
+        # Test that both entry points can be imported
+        python -c "import main_simple; print('main_simple: Import OK')"
+        python -c "import main; print('main: Import OK')"
+        
+    - name: Run unit tests
       run: |
-        python -m src.evaluate_rigor
-
-    - name: Upload Safety Report Artifacts
-      uses: actions/upload-artifact@v3
-      if: always()
-      with:
-        name: safety-report
-        path: |
-          results/rigor/*.csv
-          results/*.png
+        # Run unit tests if tests directory exists - fail fast
+        if [ -d "tests/unit" ]; then
+          pytest tests/unit -v --tb=short
+        else
+          echo "No unit tests found, skipping"
+        fi
+        
+    - name: Run integration tests
+      run: |
+        # Run integration tests if they exist - fail fast
+        if [ -d "tests/integration" ]; then
+          pytest tests/integration -v --tb=short
+        else
+          echo "No integration tests found, skipping"
+        fi

@@ -3,7 +3,6 @@ Feature Importance Analysis - Permutation importance + SHAP-like analysis.
 """
 
 import logging
-from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -63,8 +62,9 @@ def plot_feature_importance(
     """Plot horizontal bar chart of feature importance."""
     import matplotlib
     matplotlib.use("Agg")
-    import matplotlib.pyplot as plt
     from pathlib import Path
+
+    import matplotlib.pyplot as plt
 
     df = importance_df.head(top_n).sort_values("importance_mean")
 

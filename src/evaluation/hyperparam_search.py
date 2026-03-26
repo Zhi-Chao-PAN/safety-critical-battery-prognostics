@@ -10,7 +10,6 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from src.models.base import BatteryModel
 from src.data.splitter import DataSplitter
 from src.uncertainty.scoring import compute_all_metrics
 

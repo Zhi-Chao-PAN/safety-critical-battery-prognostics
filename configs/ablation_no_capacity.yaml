@@ -1,0 +1,50 @@
+# Ablation: Data Leakage Test
+# Remove capacity as direct input feature to test robustness
+# under realistic BMS conditions (no ground-truth capacity sensor)
+#
+# Rationale: In real BMS, absolute capacity is a hidden state that's
+# hard to measure directly. If the model relies on it, that's data leakage.
+# This ablation proves the model works with only V, I, T derived features.
+
+name: "ablation_no_capacity"
+seed: 42
+seeds: [42, 43, 44]
+device: "cpu"
+
+data:
+  data_dir: "data/battery_data"
+  datasets: ["nasa"]
+  eol_fraction: 0.7
+  rated_capacity: 2.0
+  val_fraction: 0.2
+
+features:
+  rolling_windows: [5, 10, 20]
+  include_ic_dv: true
+  include_frequency: true
+  include_trends: true
+  # KEY: Exclude capacity-derived features
+  exclude_features:
+    - "capacity"
+    - "capacity_rolling_mean"
+    - "capacity_rolling_std"
+    - "capacity_fade_rate"
+
+model:
+  name: "all"  # Run all models for comparison
+  hidden_dim: 64
+  num_layers: 2
+  dropout: 0.2
+  seq_length: 30
+  lr: 0.001
+  epochs: 100
+  patience: 10
+  mc_samples: 100
+
+safety:
+  rul_critical: 10.0
+  rul_warning: 30.0
+  epistemic_threshold_low: 5.0
+  epistemic_threshold_high: 15.0
+
+output_dir: "results/ablation_no_capacity"

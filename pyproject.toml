@@ -40,6 +40,14 @@ tracking = [
     "mlflow>=2.5.0",
     "optuna>=3.2.0",
 ]
+foundation = [
+    "chronos-forecasting",
+    "transformers>=4.30.0",
+    "accelerate>=0.20.0",
+]
+fmea = [
+    "requests>=2.31.0",
+]
 
 [build-system]
 requires = ["setuptools>=68.0"]
@@ -47,6 +55,7 @@ build-backend = "setuptools.backends._legacy:_Backend"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+norecursedirs = ["sandbox", "data", "logs", "checkpoints", "docs", ".git", ".github"]
 addopts = "-v --tb=short"
 
 [tool.ruff]

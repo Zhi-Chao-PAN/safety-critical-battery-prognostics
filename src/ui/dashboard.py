@@ -12,15 +12,14 @@ sys.path.insert(0, str(ROOT))
 
 import numpy as np
 import pandas as pd
-import streamlit as st
 import plotly.graph_objects as go
+import streamlit as st
 from plotly.subplots import make_subplots
 
 from src.data.unified_loader import UnifiedDataLoader
 from src.data.validator import DataValidator
 from src.features.extractor import FeatureExtractor
 from src.safety.decision_engine import SafetyDecisionEngine, SafetyLevel
-
 
 st.set_page_config(page_title="Battery Health Monitor", layout="wide", page_icon="🔋")
 

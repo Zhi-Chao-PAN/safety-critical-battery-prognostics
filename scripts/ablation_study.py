@@ -3,22 +3,20 @@ Ablation Study Runner.
 Systematically removes components to measure their contribution.
 """
 
-import copy
 import logging
 import sys
 from pathlib import Path
 
 import numpy as np
-import pandas as pd
 
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 
 from src.data.unified_loader import UnifiedDataLoader
 from src.data.validator import DataValidator
-from src.features.extractor import FeatureExtractor
-from src.models import LSTMModel, GRUModel, TCNModel, TransformerModel, PINNModel, BayesianNNModel, CNN1DModel
 from src.evaluation.benchmark import BenchmarkRunner
+from src.features.extractor import FeatureExtractor
+from src.models import BayesianNNModel, CNN1DModel, GRUModel, LSTMModel, PINNModel, TCNModel, TransformerModel
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)

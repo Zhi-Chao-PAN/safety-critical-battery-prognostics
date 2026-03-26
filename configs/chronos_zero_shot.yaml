@@ -1,0 +1,30 @@
+# Chronos Foundation Model - Zero-Shot Probing Configuration
+name: "chronos_zero_shot_probing"
+seed: 42
+
+# ── Chronos Model ──
+chronos:
+  model_id: "amazon/chronos-t5-small"       # HuggingFace model identifier
+  torch_dtype: "float32"                     # float32 for CPU, bfloat16 for GPU
+  device_map: "cpu"                          # "cpu" or "cuda"
+  num_samples: 20                            # Monte Carlo forecast samples
+  temperature: 1.0                           # Sampling temperature (1.0 = default)
+  top_k: 50                                  # Top-k token filtering
+  top_p: 1.0                                 # Nucleus sampling threshold
+
+# ── Data ──
+data:
+  data_dir: "data/battery_data"
+  datasets: ["nasa"]
+  battery_ids: ["B0005", "B0006", "B0007", "B0018"]
+  eol_fraction: 0.7
+  rated_capacity: 2.0
+
+# ── Evaluation Strategy ──
+evaluation:
+  context_ratio: 0.8                         # Fraction of series used as context
+  prediction_lengths: [10, 20, 30]           # Multiple horizon probing
+  confidence_level: 0.95                     # For PI lower/upper bounds
+
+output_dir: "results"
+figures_dir: "figures"

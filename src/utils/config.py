@@ -1,7 +1,8 @@
 from pathlib import Path
-from typing import List, Optional
+
 import yaml
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, ValidationError
+
 
 class DatasetConfig(BaseModel):
     path: Path
@@ -13,7 +14,7 @@ class GroupConfig(BaseModel):
     name: str
 
 class FeaturesConfig(BaseModel):
-    numeric: List[str]
+    numeric: list[str]
 
 class LSTMConfig(BaseModel):
     window_size: int = 30
@@ -44,10 +45,10 @@ def load_config(config_path: Path = Path("config/schema.yaml")) -> AppConfig:
     """
     if not config_path.exists():
         raise FileNotFoundError(f"Configuration file not found at {config_path}")
-        
-    with open(config_path, "r") as f:
+
+    with open(config_path) as f:
         raw_config = yaml.safe_load(f)
-        
+
     try:
         config = AppConfig(**raw_config)
         return config

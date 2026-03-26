@@ -3,9 +3,9 @@ Transformer Encoder for Battery RUL Prediction.
 Positional encoding + multi-head self-attention + CLS token.
 """
 
+import math
 from pathlib import Path
 from typing import Any
-import math
 
 import numpy as np
 import torch

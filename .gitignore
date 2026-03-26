@@ -6,16 +6,19 @@ dist/
 build/
 *.egg
 
-# Data
+# Data - keep sample data but ignore large raw datasets
 data/battery_data/*.mat
+data/raw/
 data/external/
+autodl-tmp/
 
-# Outputs
-# results/
-# figures/
+# Outputs - keep important figures in git but ignore auto-generated ones
+results/
 checkpoints/
 logs/
 *.onnx
+*.pt
+*.pth
 
 # IDE
 .vscode/
@@ -33,3 +36,10 @@ notebooks/*.html
 # Env
 .env
 .venv/
+venv/
+
+# Temporary files
+*.log
+*.tmp
+*.swp
+*~

@@ -18,6 +18,7 @@ with open("logs/run.log") as f:
 
 # Aggregate by model
 from collections import defaultdict
+
 model_agg = defaultdict(list)
 for key in sorted(results.keys()):
     model = key.rsplit("_s", 1)[0]
@@ -27,6 +28,7 @@ for key in sorted(results.keys()):
 print(f"{'Model':<20} {'Seeds×Folds':>12} {'RMSE_avg':>10} {'RMSE_std':>10} {'CRPS_avg':>10}")
 print("-" * 65)
 import numpy as np
+
 for model in model_agg:
     vals = model_agg[model]
     rmses = [v[0] for v in vals]

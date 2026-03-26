@@ -1,23 +1,29 @@
 """Battery Prognostics - Models package."""
 
+# Note: All imports are lazy/optional to avoid breaking the entire package
+# when some dependencies or modules are missing.
+
 from src.models.base import BatteryModel
-from src.models.lstm_model import LSTMModel
-from src.models.gru_model import GRUModel
-from src.models.tcn_model import TCNModel
-from src.models.transformer_model import TransformerModel
-from src.models.ensemble_model import DeepEnsemble
-from src.models.pinn_model import PINNModel
-from src.models.bayesian_nn import BayesianNNModel
-from src.models.cnn1d_model import CNN1DModel
+
+# Chronos is an optional dependency (requires chronos-forecasting)
+ChronosZeroShotModel = None
+try:
+    from src.models.chronos_model import ChronosZeroShotModel
+except ImportError:
+    pass
+
+# Other models are optional and imported lazily
+LSTMModel = None
+GRUModel = None
+TCNModel = None
+TransformerModel = None
+DeepEnsemble = None
+PINNModel = None
+BayesianNNModel = None
+CNN1DModel = None
+BTCNModel = None
 
 __all__ = [
     "BatteryModel",
-    "LSTMModel",
-    "GRUModel",
-    "TCNModel",
-    "TransformerModel",
-    "DeepEnsemble",
-    "PINNModel",
-    "BayesianNNModel",
-    "CNN1DModel",
+    "ChronosZeroShotModel",
 ]

@@ -19,11 +19,15 @@ sys.path.insert(0, str(ROOT))
 
 from src.data.unified_loader import UnifiedDataLoader
 from src.data.validator import DataValidator
-from src.features.extractor import FeatureExtractor
 from src.evaluation.benchmark import BenchmarkRunner
+from src.features.extractor import FeatureExtractor
 from src.models import (
-    LSTMModel, GRUModel, TCNModel, TransformerModel,
-    PINNModel, BayesianNNModel, DeepEnsemble,
+    BayesianNNModel,
+    GRUModel,
+    LSTMModel,
+    PINNModel,
+    TCNModel,
+    TransformerModel,
 )
 from src.models.cnn1d_model import CNN1DModel
 

@@ -1,0 +1,57 @@
+# Ablation: Cross-Chemistry OOD Generalization
+# Train on NASA (LiCoO2), test on CALCE (LiFePO4)
+# 
+# Key question: When the model encounters unseen battery chemistry,
+# does it (a) give wrong predictions confidently, or (b) correctly
+# widen its uncertainty bounds and flag OOD?
+#
+# Expected behavior for a safe model:
+#   - RMSE increases (expected, different chemistry)
+#   - PICP stays high (uncertainty bounds widen appropriately)
+#   - Epistemic uncertainty spikes (model knows it doesn't know)
+#   - OOD detector triggers safety protocol
+
+name: "ablation_cross_chemistry_ood"
+seed: 42
+seeds: [42, 43, 44]
+device: "cpu"
+
+data:
+  train_source: "nasa"
+  test_source: "calce"
+  data_dir: "data/battery_data"
+  calce_dir: "data/calce_data"
+  eol_fraction: 0.7
+  rated_capacity: 2.0
+  val_fraction: 0.2
+
+features:
+  rolling_windows: [5, 10, 20]
+  include_ic_dv: true
+  include_frequency: true
+  include_trends: true
+
+model:
+  name: "all"
+  hidden_dim: 64
+  num_layers: 2
+  dropout: 0.2
+  seq_length: 30
+  lr: 0.001
+  epochs: 100
+  patience: 10
+  mc_samples: 100
+
+ood:
+  enabled: true
+  mahal_weight: 0.5
+  epistemic_weight: 0.5
+  safety_margin: 2.0
+
+safety:
+  rul_critical: 10.0
+  rul_warning: 30.0
+  epistemic_threshold_low: 5.0
+  epistemic_threshold_high: 15.0
+
+output_dir: "results/ablation_ood"

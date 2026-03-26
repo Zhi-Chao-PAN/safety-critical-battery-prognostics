@@ -20,10 +20,10 @@ import pandas as pd
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 
+from src.data.splitter import DataSplitter
 from src.data.unified_loader import UnifiedDataLoader
 from src.data.validator import DataValidator
 from src.features.extractor import FeatureExtractor
-from src.data.splitter import DataSplitter
 from src.models import LSTMModel, PINNModel
 from src.uncertainty.scoring import compute_all_metrics
 

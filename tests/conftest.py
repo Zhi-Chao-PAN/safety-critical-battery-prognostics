@@ -3,9 +3,11 @@
 Pytest configuration and shared fixtures.
 """
 
-import pytest
 import sys
 from pathlib import Path
+
+import pytest
+
 
 # Add src directory to Python path for all tests
 @pytest.fixture(autouse=True)

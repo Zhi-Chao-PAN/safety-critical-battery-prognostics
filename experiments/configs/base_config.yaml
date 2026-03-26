@@ -1,0 +1,26 @@
+# Base experiment config file
+project_name: "prognostics-v3"
+experiment_name: "chronos-pinn"
+description: "Zero-Shot Chronos with Physics-Informed Corrector"
+
+# Data configs
+data:
+  raw_dir: "data/raw"
+  processed_dir: "data/processed"
+  batch_size: 32
+  context_ratio: 0.8
+  prediction_length: 20
+
+# Model configs
+model:
+  name: "chronos_pinn_hybrid"
+  physics_lambda: 0.5
+  learning_rate: 0.001
+  epochs: 200
+  patience: 20
+
+# Tracking
+tracking:
+  log_dir: "experiments/tracking"
+  save_model: true
+  save_plots: true

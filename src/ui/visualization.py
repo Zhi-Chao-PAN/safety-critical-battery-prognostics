@@ -6,10 +6,11 @@ Generates 12+ figure types for paper and dashboard.
 import logging
 from pathlib import Path
 
+import matplotlib
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-import matplotlib
+
 matplotlib.use("Agg")
 
 logger = logging.getLogger(__name__)

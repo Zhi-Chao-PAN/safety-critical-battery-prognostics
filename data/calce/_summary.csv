@@ -1,0 +1,9 @@
+battery_id,num_cycles,capacity_initial,capacity_final,capacity_fade_pct,chemistry
+CS2_8,101,0.1,0.093,7.0,LiCoO2
+CS2_21,101,0.099,0.09,9.09,LiCoO2
+CS2_33,864,1.0804,0.798,26.14,LiCoO2
+CS2_34,774,1.0867,0.8892,18.18,LiCoO2
+CS2_35,932,1.0324,0.9076,12.09,LiCoO2
+CS2_36,970,1.0373,1.0468,-0.92,LiCoO2
+CS2_37,1037,1.0031,1.0101,-0.69,LiCoO2
+CS2_38,1076,1.0008,1.0263,-2.54,LiCoO2

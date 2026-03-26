@@ -10,12 +10,11 @@ Features extracted per cycle:
 """
 
 import logging
-from typing import Optional
 
 import numpy as np
 import pandas as pd
-from scipy.ndimage import gaussian_filter1d
 from scipy.integrate import trapezoid
+from scipy.ndimage import gaussian_filter1d
 
 logger = logging.getLogger(__name__)
 

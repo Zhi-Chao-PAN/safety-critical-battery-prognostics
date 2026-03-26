@@ -5,10 +5,8 @@ Supports: NASA PCoE, CALCE CS2, Oxford, MIT-Stanford.
 All datasets normalized to a common schema.
 """
 
-import os
 import logging
 from pathlib import Path
-from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -34,7 +32,7 @@ class UnifiedDataLoader:
     def load_nasa(
         self,
         data_dir: str = "data/battery_data",
-        battery_ids: Optional[list[str]] = None,
+        battery_ids: list[str] | None = None,
     ) -> pd.DataFrame:
         """Load NASA PCoE dataset from .mat files."""
         if battery_ids is None:

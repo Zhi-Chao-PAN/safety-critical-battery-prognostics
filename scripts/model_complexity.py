@@ -8,9 +8,10 @@ from pathlib import Path
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 
-import torch
 import numpy as np
-from src.models import LSTMModel, GRUModel, TCNModel, TransformerModel, PINNModel, BayesianNNModel, CNN1DModel
+import torch
+
+from src.models import BayesianNNModel, CNN1DModel, GRUModel, LSTMModel, PINNModel, TCNModel, TransformerModel
 
 
 def count_parameters(model: torch.nn.Module) -> dict:

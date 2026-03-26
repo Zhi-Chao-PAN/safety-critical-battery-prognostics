@@ -1,0 +1,48 @@
+# Chronos Fine-Tuning Configuration
+# For use on AutoDL (A40/A100) with peft + bitsandbytes
+
+model:
+  model_id: "amazon/chronos-t5-small"
+  torch_dtype: "bfloat16"
+
+dataset:
+  data_dir: "data/battery_data"
+  target_col: "capacity"
+  context_length: 64
+  prediction_length: 20
+  stride: 5
+  train_batteries: ["B0005", "B0006", "B0007"]
+  val_batteries: ["B0018"]
+
+training:
+  output_dir: "checkpoints/chronos_finetune"
+  batch_size: 64
+  gradient_accumulation_steps: 1
+  learning_rate: 2.0e-4
+  weight_decay: 0.01
+  num_epochs: 50
+  warmup_ratio: 0.1
+  lr_scheduler_type: "cosine"
+  max_grad_norm: 1.0
+  fp16: false
+  bf16: true
+  gradient_checkpointing: true
+  logging_steps: 10
+  save_steps: 100
+  eval_steps: 50
+  seed: 42
+
+lora:
+  enabled: true
+  r: 16
+  lora_alpha: 32
+  target_modules: ["q", "v"]
+  lora_dropout: 0.05
+  bias: "none"
+  task_type: "SEQ_2_SEQ_LM"
+
+quantization:
+  load_in_4bit: true
+  bnb_4bit_compute_dtype: "bfloat16"
+  bnb_4bit_quant_type: "nf4"
+  bnb_4bit_use_double_quant: true

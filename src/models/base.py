@@ -9,7 +9,7 @@ All models implement the same interface for fair comparison:
 
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import numpy as np
 

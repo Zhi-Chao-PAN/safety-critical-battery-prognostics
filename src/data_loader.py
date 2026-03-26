@@ -1,8 +1,9 @@
 import os
-import scipy.io
+
 import numpy as np
 import pandas as pd
-from typing import List, Optional
+import scipy.io
+
 
 class BatteryDataLoader:
     """
@@ -14,7 +15,7 @@ class BatteryDataLoader:
         self.data_dir = data_dir
         self.rated_capacity = rated_capacity
 
-    def load_data(self, battery_ids: List[str] = ['B0005', 'B0006', 'B0007', 'B0018']) -> pd.DataFrame:
+    def load_data(self, battery_ids: list[str] = ['B0005', 'B0006', 'B0007', 'B0018']) -> pd.DataFrame:
         """
         Load and process battery data.
         
@@ -32,28 +33,28 @@ class BatteryDataLoader:
              raise FileNotFoundError(f"Data directory '{self.data_dir}' not found. Please download NASA PCoE dataset.")
 
         all_cycles = []
-        
+
         for bat_id in battery_ids:
             filepath = os.path.join(self.data_dir, f"{bat_id}.mat")
-            
+
             if not os.path.exists(filepath):
                  raise FileNotFoundError(f"Battery file not found: {filepath}")
-            
+
             try:
                 mat = scipy.io.loadmat(filepath)
                 cycles = mat[bat_id][0, 0]['cycle'][0]
-                
+
                 cycle_count = 0
                 for cycle in cycles:
                     if cycle['type'][0] == 'discharge':
                         cycle_count += 1
                         data = cycle['data']
-                        
+
                         # Defensively extract nested mat structure
                         capacity = data[0, 0]['Capacity'][0][0]
                         temp = data[0, 0]['Temperature_measured'][0]
                         time = data[0, 0]['Time'][0]
-                        
+
                         all_cycles.append({
                             'battery_id': bat_id,
                             'cycle': cycle_count,
@@ -64,7 +65,7 @@ class BatteryDataLoader:
             except Exception as e:
                 print(f"Error processing {bat_id}: {e}")
                 raise ValueError(f"Corrupt or incompatible data format for {bat_id}") from e
-                
+
         if not all_cycles:
              raise ValueError("No valid cycle data extracted from files.")
 
