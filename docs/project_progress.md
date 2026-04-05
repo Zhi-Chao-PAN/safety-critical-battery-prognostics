@@ -195,9 +195,22 @@
     - 其余三路 Agent 执行最终微调
   - **输出**: `agents/round3_prompts.md`
 
+### Milestone 21: Round 3 审阅完成 — 论文核心章节全部就绪 (2026-04-06)
+  - **Round 3 评分**:
+    - DeepSeek V3.2: **A-** ↑ — Theorem 4 四步完整证明链 + 实验解读修正 + Corollary 4.4
+    - Doubao 2.0 Pro: **A** — 成功接管 Related Work (A-E 完整 + Table I + 28 引文)
+    - MiniMax 2.5: **A** — VI.A 三子段拆分 + 术语统一 + INT8 修正
+    - GLM 4.7: 待提交 (任务量极小: ~200 词脚注)
+  - **三轮工作流最终成果**:
+    - Section II (Related Work): Doubao → A
+    - Section III (Math Framework): DeepSeek → A-
+    - Section V.H-K (Experiments): GLM → A
+    - Section VI (Discussion): MiniMax → A
+    - Kimi 2.5: 弃用 (两轮 F)
+  - **遗留修正**: Doubao "cross-工况" → "cross-condition"; 补充引文至 ≥40 篇
+
 ## Next Steps
-- **Round 3 执行**: 四路 Agent 最终修正 (DeepSeek/GLM/MiniMax 微调 + Doubao 接管 Related Work)
-- **论文整合**: Round 3 产出收齐后，Antigravity 执行全文整合至 IEEE Whitepaper 终稿
+- **论文终稿整合**: Antigravity 将各 Agent 产出整合至 IEEE Whitepaper 终稿
 - **超参敏感性实验**: 基于 Doubao Round 2 设计方案实现脚本并执行
 - **NASA Validation**: 迁移至 NASA B0005-B0018 零样本验证
 - **Phase 3 (AutoDL GPU)**: 等条件就绪后启动 QLoRA 训练。
