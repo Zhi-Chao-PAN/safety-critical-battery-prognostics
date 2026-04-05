@@ -1,0 +1,64 @@
+name: "pinn_battery_prognostics"
+seed: 42
+
+hardware:
+  device: "auto"
+  use_mixed_precision: true
+  num_workers: 4
+  pin_memory: true
+  deterministic: false
+
+physics:
+  rated_capacity: 2.0
+  eol_fraction: 0.7
+  lambda_physics: 0.1
+  lambda_mono: 0.05
+  adaptive_weighting: true
+  lambda_physics_min: 0.01
+  lambda_physics_max: 1.0
+  lambda_mono_min: 0.01
+  lambda_mono_max: 0.2
+  transition_sharpness: 10.0
+  transition_center: 0.6
+
+data:
+  data_dir: "data/battery_data"
+  datasets: ["nasa"]
+  battery_ids: null
+  val_fraction: 0.2
+  test_fraction: 0.2
+  batch_size: 32
+  shuffle: true
+  drop_last: true
+  enable_anomaly_detection: true
+  nan_replacement: "interpolate"
+  clip_outliers: true
+  outlier_std_threshold: 5.0
+
+train:
+  input_dim: 2
+  hidden_dim: 64
+  dropout: 0.2
+  lr: 0.001
+  epochs: 150
+  patience: 15
+  mc_samples: 100
+  weight_decay: 0.0001
+  grad_clip_norm: 1.0
+  checkpoint_dir: "checkpoints"
+  save_best_only: true
+  log_interval: 10
+
+monitor:
+  enable_monitoring: true
+  nan_tolerance: 3
+  inf_tolerance: 3
+  save_on_anomaly: true
+  anomaly_checkpoint_name: "anomaly_recovery"
+  track_gradients: false
+  track_weights: false
+
+logging:
+  level: "INFO"
+  log_file: null
+  log_format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"

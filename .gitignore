@@ -38,8 +38,18 @@ notebooks/*.html
 .venv/
 venv/
 
+# Linting & Testing caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+htmlcov/
+
 # Temporary files
-*.log
 *.tmp
-*.swp
 *~
+
+# Sandbox / scratch
+sandbox/
+
+# Large generated experiment outputs
+robustness_results/*.html
