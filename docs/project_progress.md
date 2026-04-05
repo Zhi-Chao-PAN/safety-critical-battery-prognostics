@@ -209,8 +209,30 @@
     - Kimi 2.5: 弃用 (两轮 F)
   - **遗留修正**: Doubao "cross-工况" → "cross-condition"; 补充引文至 ≥40 篇
 
+### Milestone 22: IEEE 白皮书终稿整合完成 (2026-04-06)
+  - **整合范围**:
+    - Section II (Related Work): 替换为 Doubao R3 六子段版 (A-F + TABLE I + Research Gap)
+    - Section V.H-K: 插入 GLM R2 四新实验章节 (TABLE IX-XIII)
+    - Section V.K: 嵌入 GLM R3 Table IX/XIII VR 差异说明段落 + latency 脚注
+    - Section VI (Discussion): 替换为 MiniMax R3 五子段版 (A-E + TABLE XIV)
+  - **修正项**:
+    - ✅ "cross-工况" → "cross-condition"
+    - ✅ 推理延迟脚注 (GLM R3)
+    - ✅ Table IX/XIII VR 差异说明 (GLM R3)
+  - **终稿规模**: 669 行, 72,680 字节, 14 张表格 (TABLE I-XIV)
+  - **章节结构**: Abstract + I-VII + References
+    - II: A-F (6 子段 + Summary Table)
+    - V: A-K (11 子段, 含 4 新实验)
+    - VI: A-E (5 子段, VI.A 含 3 子子段)
+  - **Commit**: `a5bb526` on `main`
+  - **待办**:
+    - DeepSeek R3 Theorem 4 证明链整合至 Section III.E (需评估是否适合当前框架)
+    - 引文列表扩充至 ≥ 40 篇
+    - TABLE 编号体系一致性校验 (TABLE I 在 Related Work 中, 后续可能需要重编号)
+
 ## Next Steps
-- **论文终稿整合**: Antigravity 将各 Agent 产出整合至 IEEE Whitepaper 终稿
+- **引文补充**: 扩充 References 至 ≥ 40 篇 (当前 20 篇)
+- **Theorem 4 整合评估**: 评估 DeepSeek R3 的 Theorem 4 证明链是否适合纳入 Section III
 - **超参敏感性实验**: 基于 Doubao Round 2 设计方案实现脚本并执行
 - **NASA Validation**: 迁移至 NASA B0005-B0018 零样本验证
-- **Phase 3 (AutoDL GPU)**: 等条件就绪后启动 QLoRA 训练。
+- **Phase 3 (AutoDL GPU)**: 等条件就绪后启动 QLoRA 训练
