@@ -160,7 +160,31 @@
     - **C: Multi-Seed Statistical Significance (`scripts/multi_seed_robustness.py`)**: 
       - 执行 5 倍随机种子(5-seed) 独立训练，应用 Welch\'s t-test，从统计学层面 ($p < 0.01$) 碾压审稿人关于“单点偶然性”的潜在质疑。
 
+19. **Milestone #19: Phase 9 — Multi-Agent 论文级学术武装 + 公平性验证实验** (2026-04-06)
+    - **A: 五路 Agent 并行产出** (DeepSeek/Doubao/GLM/MiniMax/Kimi):
+      - DeepSeek V3.2: 三层防御数学证明 (Theorem 1-3 + EMA命题)
+      - Doubao 2.0 Pro: 12 维审稿人攻击面模拟 (识别出公平性对比为致命弱点)
+      - GLM 4.7: IEEE Section V.H/I/J 实验章节 (Tables IX-XII)
+      - MiniMax 2.5: Discussion & Future Work 重写 (5 subsections)
+      - Kimi 2.5: Related Work 文献综述 (48 引文, 需验证)
+    - **B: 公平性验证实验 (`scripts/fairness_validation.py`)**:
+      - 给所有 5 个数据驱动基线添加与 PINN 相同的 running-minimum 后处理
+      - **关键发现**: 所有基线添加后处理后均达到 0.00% VR
+      - **核心论证点**: 后处理 RMSE 惩罚率差异:
+        - PINN: -6.9% (后处理反而改善了 RMSE)
+        - LSTM: -22.3% | GRU: -23.2% | Transformer: -2.1%
+        - TCN: +35.8% (后处理严重损害精度) | CNN1D: +21.3%
+      - **论文叙事调整**: PINN 优势不在于"唯一 0% VR"，而在于"以最低代价实现 0% VR"
+    - **C: Agent 产出审阅** — 发现并标记以下关键问题:
+      - DeepSeek: 定理 3 为经验性论证需降级
+      - GLM: Table IX RMSE 描述事实性错误
+      - MiniMax: 三层防御定义与代码实现不一致 (MC Dropout ≠ 防御层)
+      - Kimi: Section A-E 正文缺失，48 引文中约 30% 存在幻觉风险
+    - **输出**: `robustness_results/fairness_validation.png`, `fairness_validation_report.md`, `fairness_validation_data.csv`
+
 ## Next Steps
-- **论文投稿准备**: 将新增的三大实验（图表和报告）以 LaTeX 完备逻辑整合入 IEEE Whitepaper。
-- **NASA Validation**: 准备基于 `scripts/real_data_validation.py`，迁移至 NASA B0005-B0018 的零样本验证，作为最终闭环。
+- **第二轮 Agent 修正**: 基于审阅反馈，五路 Agent 执行精度修正和补充任务
+- **超参敏感性实验**: α ∈ [0.05, 0.5] × clamp_range ∈ [1.5R, 3R] 扫析
+- **论文结构调整**: 基于公平性实验结果重新组织 PINN 优势叙事
+- **NASA Validation**: 迁移至 NASA B0005-B0018 零样本验证
 - **Phase 3 (AutoDL GPU)**: 等条件就绪后启动 QLoRA 训练。
