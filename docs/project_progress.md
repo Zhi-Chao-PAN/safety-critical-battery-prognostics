@@ -226,13 +226,32 @@
     - VI: A-E (5 子段, VI.A 含 3 子子段)
   - **Commit**: `a5bb526` on `main`
   - **待办**:
+    - ~~引文列表扩充至 ≥ 40 篇~~ ✅ (Milestone 23)
+    - ~~TABLE 编号体系一致性校验~~ ✅ (Milestone 23)
     - DeepSeek R3 Theorem 4 证明链整合至 Section III.E (需评估是否适合当前框架)
-    - 引文列表扩充至 ≥ 40 篇
-    - TABLE 编号体系一致性校验 (TABLE I 在 Related Work 中, 后续可能需要重编号)
+
+### Milestone 23: Phase 11 终稿打磨 — 引文统一 + TABLE 重编号 + 结论升级 (2026-04-06)
+  - **WP-1 引文统一**:
+    - ✅ 28 处 `[Author et al., Year]` 格式 → IEEE `[N]` 编号格式
+    - ✅ 新增引文 [21]-[46], 共 26 篇, 总计 46 篇 (满足 IEEE 30-50 篇标准)
+    - ✅ 消除所有 author-year 残留 (含 `Raissi et al. [2019]`, `Gal et al. [2016]`)
+  - **WP-2 TABLE 重编号**:
+    - ✅ 修复 TABLE I 重复冲突 (Related Work vs. Hyperparameter)
+    - ✅ 全局 TABLE 编号统一: TABLE I → TABLE XV (15 张表, 连续无间断)
+    - ✅ 行内交叉引用全部同步更新 (Table II/III/IV/V/VI/X/XIV)
+  - **WP-3 Introduction 修正**:
+    - ✅ 章节导引更新: 正确映射 V (Results), VI (Discussion), VII (Conclusion)
+  - **WP-4 Conclusion 升级**:
+    - ✅ 从 5 点贡献升级为 7 点贡献 (含 Multi-Baseline Robustness + Statistical Significance)
+    - ✅ 尾段摘要: 11 evaluation dimensions, 15 tables, p=0.0010
+  - **WP-5 元数据更新**:
+    - ✅ Paper Information 更新: ~12 pages, 46 References, 15 Tables
+  - **终稿规模**: 725 行, 79,281 字节, 15 张表格 (TABLE I-XV), 46 篇引文
+  - **Commit**: `2e46f85` on `main`
 
 ## Next Steps
-- **引文补充**: 扩充 References 至 ≥ 40 篇 (当前 20 篇)
-- **Theorem 4 整合评估**: 评估 DeepSeek R3 的 Theorem 4 证明链是否适合纳入 Section III
+- **Theorem 4 整合评估**: 评估 DeepSeek R3 的 Theorem 4 证明链是否适合纳入 Section III.E
 - **超参敏感性实验**: 基于 Doubao Round 2 设计方案实现脚本并执行
 - **NASA Validation**: 迁移至 NASA B0005-B0018 零样本验证
 - **Phase 3 (AutoDL GPU)**: 等条件就绪后启动 QLoRA 训练
+- **IEEE 格式转换**: 将 Markdown 终稿转换为 LaTeX 双栏 IEEE Transactions 排版
