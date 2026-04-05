@@ -136,6 +136,22 @@
     - **核心发现**: 防爆盾在真实数据上 **完美泛化**，6/6 电池全部 0% 违规
     - **产出件**: `robustness_results/real_data_validation.png` + `real_data_validation_report.md`
 
+
+17. **Milestone #17: README 专业化 + IEEE 论文更新** (2026-04-05)
+    - **README.md 重写**: 
+      - 添加实验结果展示（消融表 + 6 电池验证表）
+      - 三层防御架构图（ASCII art）
+      - 可复现性指南（精确命令）
+      - 更新 citation format
+    - **IEEE 论文更新**:
+      - 新增 Section V.E: Robustness Under Extreme Sensor Noise (Table VI)
+      - 新增 Section V.F: Defense Layer Ablation Study (Table VII)
+      - 新增 Section V.G: Cross-Cell Generalization (Table VIII)
+      - 更新 Conclusion: 5 个贡献点（含三层防御 + 真实数据泛化）
+    - **GitHub Push**: 所有 commit 已推送至远程仓库
+    - **Git Commit**: `c330933`
+
 ## Next Steps
-- **IEEE 论文集成**: 将 Section 7-9（鲁棒性 + 消融 + 真实数据验证）整合进论文草稿。
-- **Phase 3 (AutoDL GPU)**: Launch QLoRA training using the established pipeline.
+- **论文投稿准备**: LaTeX 排版、参考文献完善、图表优化
+- **更多 baseline 对比**: Transformer、Chronos 等模型的鲁棒性对比
+- **Phase 3 (AutoDL GPU)**: 等条件就绪后启动 QLoRA 训练
