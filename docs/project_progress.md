@@ -91,8 +91,34 @@
     - **单元测试**: 34/34 全部通过
     - **Git Commit**: `de78992` (feat(robustness): achieve 0.00% physical violation rate under 50% Gaussian noise)
 
+
+14. **Milestone #14: 仓库专业化治理** (2026-04-05)
+    - **根目录清理**: 55 个文件 → 12 个核心文件
+    - **迁移**: 12 个历史文档 → `docs/archive/`，6 个应用脚本 → `scripts/`，C++ 示例 → `examples/`
+    - **删除**: 18 个废弃测试脚本、临时日志、LLM prompt 草稿
+    - **纳入版本控制**: `src/infrastructure/`，`src/training/mixed_precision.py`，`configs/pinn_config.yaml` 等
+    - **`.gitignore` 加固**: 添加 cache、sandbox、大型 HTML 排除规则
+    - **Git Commit**: `7bd5063`
+
+15. **Milestone #15: 防御层消融实验** (2026-04-05)
+    - **目标**: 量化三层防御（约束训练 / 残差钳位 / 单调投影）的独立贡献
+    - **实验结果**:
+
+    | 变体 | RMSE (Ah) | 违规率 | 违规次数 |
+    |------|-----------|--------|---------|
+    | V0: 无防御 | 1.748 | 50.75% | 101 |
+    | V1: 仅约束训练 | 3.348 | 48.24% | 96 |
+    | V2: +残差钳位 | 0.759 | 48.74% | 97 |
+    | V3: +单调投影 | 2.589 | 0.00% | 0 |
+    | **V4: 完整防御** | **0.323** | **0.00%** | **0** |
+
+    - **核心发现**:
+      - 投影层是 0% 违规的决定性保障（V3 = 0.00%）
+      - 钳位层是精度的核心贡献（V2 RMSE 比 V1 降低 77%）
+      - 三层协同 = 安全 + 精度的最优解
+    - **产出件**: `robustness_results/ablation_defense_layers.png` + `ablation_defense_report.md`
+
 ## Next Steps
-- **Ablation Study**: 运行 `scripts/run_ablation_study.py`，量化单调投影 vs 残差钳位对鲁棒性的独立贡献。
-- **真实噪声验证**: 在真实世界退化电池数据上测试 PINN 防爆盾性能（非合成高斯噪声）。
-- **IEEE 论文集成**: 将 `robustness_test_report.md` 和生成的图表整合進论文草稿。
-- **Phase 3 (AutoDL GPU)**: Launch QLoRA training using the newly paved pipeline.
+- **IEEE 论文集成**: 将鲁棒性实验（Section 7）和消融实验（Section 8）整合进论文草稿。
+- **真实噪声验证**: 在真实世界退化电池数据上验证防爆盾的泛化能力。
+- **Phase 3 (AutoDL GPU)**: Launch QLoRA training using the established pipeline.
