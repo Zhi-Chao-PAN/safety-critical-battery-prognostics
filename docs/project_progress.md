@@ -182,9 +182,22 @@
       - Kimi: Section A-E 正文缺失，48 引文中约 30% 存在幻觉风险
     - **输出**: `robustness_results/fairness_validation.png`, `fairness_validation_report.md`, `fairness_validation_data.csv`
 
+### Milestone 20: Round 2 审阅完成 & Round 3 部署 (2026-04-06)
+  - **Round 2 评分**:
+    - GLM 4.7: **A** — Section V.H-K + Table IX-XIII 完美交付，数据全部正确
+    - MiniMax 2.5: **A** — Discussion VI.A-E 公平性讨论精彩，Table XIV 设计合理
+    - Doubao 2.0 Pro: **A-** — 超参敏感性 + 非高斯噪声实验设计优秀
+    - DeepSeek V3.2: **B+** — 定理修正到位，Theorem 4 证明需补步骤 + 实验解读修正
+    - Kimi 2.5: **F** — 两轮均交付残缺文件，弃用
+  - **Round 3 任务重分配**:
+    - Kimi 2.5 从工作流中移除
+    - Related Work 任务转交 Doubao 2.0 Pro
+    - 其余三路 Agent 执行最终微调
+  - **输出**: `agents/round3_prompts.md`
+
 ## Next Steps
-- **第二轮 Agent 修正**: 基于审阅反馈，五路 Agent 执行精度修正和补充任务
-- **超参敏感性实验**: α ∈ [0.05, 0.5] × clamp_range ∈ [1.5R, 3R] 扫析
-- **论文结构调整**: 基于公平性实验结果重新组织 PINN 优势叙事
+- **Round 3 执行**: 四路 Agent 最终修正 (DeepSeek/GLM/MiniMax 微调 + Doubao 接管 Related Work)
+- **论文整合**: Round 3 产出收齐后，Antigravity 执行全文整合至 IEEE Whitepaper 终稿
+- **超参敏感性实验**: 基于 Doubao Round 2 设计方案实现脚本并执行
 - **NASA Validation**: 迁移至 NASA B0005-B0018 零样本验证
 - **Phase 3 (AutoDL GPU)**: 等条件就绪后启动 QLoRA 训练。
