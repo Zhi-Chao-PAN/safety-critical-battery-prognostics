@@ -193,9 +193,47 @@ The three layers serve **complementary, non-redundant roles**:
 
 Removing any single layer degrades either accuracy (no clamping: RMSE 2.589) or safety (no projection: VR ~48%).
 
+
 ---
 
-## 9. Conclusion
+## 9. Real-World Data Generalization
+
+### 9.1 Motivation
+
+The defense layer ablation (Section 8) uses synthetic data. To validate the physics shield's generalizability, we test on **6 real CALCE CS2-series lithium-ion batteries** spanning 774–1,076 cycles, each with distinct degradation profiles.
+
+### 9.2 Experimental Setup
+
+- **Dataset**: CALCE CS2_33, CS2_34, CS2_35, CS2_36, CS2_37, CS2_38
+- **Noise injection**: 50% Gaussian (σ = 0.5 × σ_capacity), same as synthetic experiments
+- **Defense**: Full three-layer physics shield (unchanged hyperparameters)
+- **No retuning**: Same α=0.15 EMA, same clamping, same constraint weights
+
+### 9.3 Cross-Cell Results
+
+| Cell | Cycles | PINN RMSE | PINN VR | LSTM RMSE | LSTM VR |
+|------|--------|-----------|---------|-----------|---------|
+| CS2_33 | 864 | 0.2872 | **0.00%** | 0.2763 | 47.97% |
+| CS2_34 | 774 | 0.2031 | **0.00%** | 0.1411 | 49.29% |
+| CS2_35 | 932 | 0.2051 | **0.00%** | 0.2021 | 48.87% |
+| CS2_36 | 970 | 0.2744 | **0.00%** | 0.2488 | 48.30% |
+| CS2_37 | 1,037 | 0.2543 | **0.00%** | 0.2189 | 49.52% |
+| CS2_38 | 1,076 | 0.2142 | **0.00%** | 0.2069 | 49.95% |
+| **Average** | — | **0.2397** | **0.00%** | **0.2157** | **48.98%** |
+
+### 9.4 Key Findings
+
+1. **Perfect generalization**: PINN achieves 0.00% violation rate on **all 6 real cells** without any hyperparameter retuning. The physics shield is not an artifact of synthetic data.
+
+2. **LSTM universally fails**: LSTM violation rate averages 48.98% across all cells — nearly half of all consecutive predictions show non-physical capacity rebound.
+
+3. **RMSE trade-off is modest**: PINN's average RMSE (0.240) is only 11% higher than LSTM (0.216). This confirms the ROI of the physics shield: a small accuracy penalty buys complete physical consistency.
+
+4. **Scale robustness**: The defense works equally well on short-cycle batteries (CS2_34: 774 cycles) and long-cycle batteries (CS2_38: 1,076 cycles).
+
+---
+
+## 10. Conclusion
 
 The proposed micro-macro time-scale decoupled architecture demonstrates:
 - ✅ State-of-the-art prediction accuracy on both NASA and CALCE datasets
@@ -204,5 +242,6 @@ The proposed micro-macro time-scale decoupled architecture demonstrates:
 - ✅ Reliable uncertainty estimation with conformal prediction
 - ✅ Robust safety guarantees via three-layer physics defense (0.00% violation rate under 50% noise)
 - ✅ Quantified defense layer contributions via ablation study
+- ✅ Perfect generalization to 6 real CALCE battery cells (0.00% VR on all)
 
-These results validate the effectiveness of incorporating physics-informed constraints in a decoupled architecture for safety-critical battery prognostics.
+These results validate the effectiveness of incorporating physics-informed constraints in a decoupled architecture for safety-critical battery prognostics. The three-layer defense provides engineering-grade reliability for real-world BMS deployment.

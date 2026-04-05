@@ -118,7 +118,24 @@
       - 三层协同 = 安全 + 精度的最优解
     - **产出件**: `robustness_results/ablation_defense_layers.png` + `ablation_defense_report.md`
 
+
+16. **Milestone #16: 真实 CALCE 数据跨电池验证** (2026-04-05)
+    - **目标**: 在 6 个真实 CALCE CS2 系列电池上验证防爆盾泛化性
+    - **实验条件**: 50% 高斯噪声注入，无超参数调整（使用合成数据训练的配置）
+    - **实验结果**:
+
+    | 电池 | 循环数 | PINN VR | LSTM VR |
+    |------|--------|---------|---------|
+    | CS2_33 | 864 | **0.00%** ✅ | 47.97% |
+    | CS2_34 | 774 | **0.00%** ✅ | 49.29% |
+    | CS2_35 | 932 | **0.00%** ✅ | 48.87% |
+    | CS2_36 | 970 | **0.00%** ✅ | 48.30% |
+    | CS2_37 | 1,037 | **0.00%** ✅ | 49.52% |
+    | CS2_38 | 1,076 | **0.00%** ✅ | 49.95% |
+
+    - **核心发现**: 防爆盾在真实数据上 **完美泛化**，6/6 电池全部 0% 违规
+    - **产出件**: `robustness_results/real_data_validation.png` + `real_data_validation_report.md`
+
 ## Next Steps
-- **IEEE 论文集成**: 将鲁棒性实验（Section 7）和消融实验（Section 8）整合进论文草稿。
-- **真实噪声验证**: 在真实世界退化电池数据上验证防爆盾的泛化能力。
+- **IEEE 论文集成**: 将 Section 7-9（鲁棒性 + 消融 + 真实数据验证）整合进论文草稿。
 - **Phase 3 (AutoDL GPU)**: Launch QLoRA training using the established pipeline.
