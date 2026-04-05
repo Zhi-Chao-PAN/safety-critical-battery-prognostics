@@ -1,0 +1,11 @@
+---
+
+**Experimental Configuration Clarification for Fairness Validation**
+
+The apparent discrepancy between PINN violation rates in Table IX (0.00%) and Table XIII (49.75% original) stems from distinct architectural configurations employed in each experiment. Table IX presents PINN with the complete three-layer defense architecture (Layer 1: constraint-informed training training, Layer 2: residual clamping, Layer 3: monotonic projection), which achieves zero violations through integrated physics-based mechanisms. In contrast, the fairness validation experiment in Table XIII uses a controlled baseline configuration where all models—including PINN—are evaluated with only Layer 1 (constraint-informed training) to ensure equitable comparison. This deliberate removal of Layers 2 and 3 from PINN's architecture yields the observed 49.75% original violation rate, demonstrating that physics-informed training alone is insufficient for complete violation prevention. The "Post" column applies identical post-processing (EMA α=0.15 + running-minimum) to all models uniformly, ensuring that any violation rate improvements are attributable solely to post-processing rather than model-specific defense mechanisms. This controlled experimental design isolates the contribution of post-processing from intrinsic model capabilities, providing a rigorous framework for evaluating whether simple post-hoc corrections can substitute for physics-informed architectural defenses.
+
+---
+
+**Table IX Footnote:**
+
+Inference latency measured on [Intel Core Ultra 9-185H, NVIDIA RTX 4060, 8GB VRAM]. Batch size = 1, single prediction cycle. PINN latency reflects forward propagation through physics-informed layers without iterative PDE solving. Data-driven model latencies include recurrent/convolutional computation overhead.
