@@ -193,9 +193,17 @@ class MonotonicityConstraint(PhysicsConstraint):
             # predictions shape: [batch_size, seq_len]
             diffs = predictions[:, 1:] - predictions[:, :-1]  # [batch_size, seq_len-1]
         else:
-            # Single prediction per sample - use batch dimension
-            # This assumes batch is sorted by cycle
-            diffs = predictions[1:] - predictions[:-1]  # [batch_size-1, 1]
+            # Single prediction per sample — must ensure batch is sorted by cycle.
+            # DEFENSIVE: Sort predictions by cycle order from inputs to avoid
+            # silent failure when mini-batching or random sampling is introduced.
+            cycles = inputs.get("cycles")
+            if cycles is not None and cycles.numel() >= predictions.shape[0]:
+                cycle_vals = cycles[:predictions.shape[0]].squeeze()
+                sort_idx = torch.argsort(cycle_vals)
+                predictions_sorted = predictions[sort_idx]
+            else:
+                predictions_sorted = predictions
+            diffs = predictions_sorted[1:] - predictions_sorted[:-1]  # [batch_size-1, 1]
         
         # Guard: no diffs to compute (single sample or single timestep)
         if diffs.numel() == 0:
@@ -251,15 +259,25 @@ class SPMResidualConstraint(PhysicsConstraint):
 
 class VoltageConstraint(PhysicsConstraint):
     """
-    Voltage Safety Constraint: Keep voltage within safe operating range.
+    Capacity Bound Safety Constraint (historically named VoltageConstraint).
+    
+    Despite its name, this constraint operates on CAPACITY predictions (Ah),
+    not raw voltage values. It enforces that predicted capacity stays within
+    a physically plausible operating range.
+    
+    In a capacity-prediction PINN, the model outputs capacity (e.g., 1.0–2.0 Ah).
+    The defaults v_min=0.0, v_max=2.5 bound the predictions to this range.
     
     Mathematical formulation:
-        loss = mean( max(voltage - V_max, 0)² + max(V_min - voltage, 0)² )
+        loss = mean( max(pred - cap_max, 0)² + max(cap_min - pred, 0)² )
+    
+    NOTE: If your system predicts actual voltage, override v_min/v_max to
+    voltage-appropriate ranges (e.g., 2.5V–4.2V for Li-ion).
     """
     
     def __init__(self, 
-                 v_min: float = 2.5, 
-                 v_max: float = 4.2,
+                 v_min: float = 0.0, 
+                 v_max: float = 2.5,
                  weight: float = 0.02,
                  adaptive: bool = True):
         super().__init__("voltage_safety", weight, adaptive)
@@ -271,39 +289,49 @@ class VoltageConstraint(PhysicsConstraint):
                     inputs: Dict[str, torch.Tensor],
                     **kwargs) -> torch.Tensor:
         """
-        Compute voltage safety constraint loss.
+        Compute capacity bound constraint loss.
         
         Args:
-            predictions: Voltage predictions [batch_size, 1]
-            inputs: Must contain 'voltage' key or predictions are voltages
+            predictions: Capacity predictions [batch_size, 1] (in Ah)
+            inputs: Constraint context dict (cycles, features, etc.)
             
         Returns:
-            loss: Voltage safety violation loss (scalar)
+            loss: Capacity bound violation loss (scalar)
         """
         # Validate inputs
         if not self.validate(predictions, inputs):
             return self._nan_penalty_loss()
         
-        # Penalize voltages outside safe range
-        over_voltage = F.relu(predictions - self.v_max)  # [batch_size, 1]
-        under_voltage = F.relu(self.v_min - predictions)  # [batch_size, 1]
+        # Penalize predictions outside safe capacity range
+        over_bound = F.relu(predictions - self.v_max)   # [batch_size, 1]
+        under_bound = F.relu(self.v_min - predictions)   # [batch_size, 1]
         
         # Quadratic penalty
-        loss = torch.mean(over_voltage ** 2 + under_voltage ** 2)
+        loss = torch.mean(over_bound ** 2 + under_bound ** 2)
         
         return loss
 
 
 class TemperatureConstraint(PhysicsConstraint):
     """
-    Temperature Safety Constraint: Keep temperature within safe range.
+    Capacity Upper-Bound Safety Constraint (historically named TemperatureConstraint).
+    
+    Despite its name, this constraint operates on CAPACITY predictions (Ah)
+    in the current system (which predicts capacity, not temperature). It
+    enforces that predicted capacity does not exceed the rated maximum.
+    
+    The default t_max=2.2 corresponds to a generous upper bound for
+    a 2.0 Ah rated cell (110% headroom).
     
     Mathematical formulation:
-        loss = mean( max(temperature - T_max, 0)² )
+        loss = mean( max(pred - cap_upper, 0)² )
+    
+    NOTE: If your system predicts actual temperature, override t_max to
+    a temperature-appropriate value (e.g., 45°C for Li-ion).
     """
     
     def __init__(self, 
-                 t_max: float = 45.0,  # Celsius
+                 t_max: float = 2.2,  # Capacity upper bound (Ah), not Celsius
                  weight: float = 0.01,
                  adaptive: bool = True):
         super().__init__("temperature_safety", weight, adaptive)
@@ -314,24 +342,24 @@ class TemperatureConstraint(PhysicsConstraint):
                     inputs: Dict[str, torch.Tensor],
                     **kwargs) -> torch.Tensor:
         """
-        Compute temperature safety constraint loss.
+        Compute capacity upper-bound constraint loss.
         
         Args:
-            predictions: Temperature predictions [batch_size, 1]
-            inputs: Must contain 'temperature' key or predictions are temperatures
+            predictions: Capacity predictions [batch_size, 1] (in Ah)
+            inputs: Constraint context dict (cycles, features, etc.)
             
         Returns:
-            loss: Temperature safety violation loss (scalar)
+            loss: Capacity upper-bound violation loss (scalar)
         """
         # Validate inputs
         if not self.validate(predictions, inputs):
             return self._nan_penalty_loss()
         
-        # Penalize temperatures above safe limit
-        over_temp = F.relu(predictions - self.t_max)  # [batch_size, 1]
+        # Penalize predictions exceeding upper capacity bound
+        over_bound = F.relu(predictions - self.t_max)  # [batch_size, 1]
         
         # Quadratic penalty
-        loss = torch.mean(over_temp ** 2)
+        loss = torch.mean(over_bound ** 2)
         
         return loss
 

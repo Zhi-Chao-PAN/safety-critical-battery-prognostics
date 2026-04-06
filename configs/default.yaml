@@ -1,8 +1,11 @@
-# Default experiment configuration
+# Default experiment configuration — LSTM BASELINE COMPARISON
+# NOTE: This config is for baseline model evaluation (LSTM, not PINN).
+# PINN training uses PINNModel.__init__() parameters directly.
+# See scripts/validate_real_data.py for PINN experiment setup.
 name: "baseline_comparison"
 seed: 42
 seeds: [42, 43, 44, 45, 46]
-device: "cpu"  # Change to "cuda" if GPU available
+device: "cpu"  # Baseline runs on CPU; PINN uses its own device config
 
 data:
   data_dir: "data/battery_data"

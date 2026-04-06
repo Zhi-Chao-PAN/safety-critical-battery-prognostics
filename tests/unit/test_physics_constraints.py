@@ -48,12 +48,12 @@ def spm_constraint():
 
 @pytest.fixture
 def voltage_constraint():
-    return VoltageConstraint(v_min=2.5, v_max=4.2, weight=0.02, adaptive=True)
+    return VoltageConstraint(v_min=0.0, v_max=2.5, weight=0.02, adaptive=True)
 
 
 @pytest.fixture
 def temperature_constraint():
-    return TemperatureConstraint(t_max=45.0, weight=0.01, adaptive=True)
+    return TemperatureConstraint(t_max=2.2, weight=0.01, adaptive=True)
 
 
 @pytest.fixture
@@ -204,11 +204,11 @@ class TestSPMResidualConstraint:
 # ──────────────────── VoltageConstraint ─────────────────────
 
 class TestVoltageConstraint:
-    """Voltage constraint: keep within [V_min, V_max]."""
+    """Capacity bound constraint: keep within [v_min, v_max] (capacity range, Ah)."""
 
     def test_within_range_zero_loss(self, voltage_constraint):
-        """Voltage within [2.5, 4.2] → loss should be 0."""
-        predictions = torch.tensor([3.0, 3.5, 4.0, 2.8]).unsqueeze(1)
+        """Capacity within [0.0, 2.5] → loss should be 0."""
+        predictions = torch.tensor([0.5, 1.0, 1.5, 2.0]).unsqueeze(1)
         inputs = {}
 
         loss = voltage_constraint.compute_loss(predictions, inputs)
@@ -216,26 +216,26 @@ class TestVoltageConstraint:
         assert loss.item() == pytest.approx(0.0, abs=1e-7)
 
     def test_overvoltage_positive_loss(self, voltage_constraint):
-        """Voltage above 4.2 → should trigger penalty."""
-        predictions = torch.tensor([4.5, 5.0]).unsqueeze(1)
+        """Capacity above 2.5 → should trigger penalty."""
+        predictions = torch.tensor([2.8, 3.0]).unsqueeze(1)
         inputs = {}
 
         loss = voltage_constraint.compute_loss(predictions, inputs)
 
-        assert loss.item() > 0, "Over-voltage should produce positive loss"
+        assert loss.item() > 0, "Over-bound capacity should produce positive loss"
 
     def test_undervoltage_positive_loss(self, voltage_constraint):
-        """Voltage below 2.5 → should trigger penalty."""
-        predictions = torch.tensor([2.0, 1.5]).unsqueeze(1)
+        """Capacity below 0.0 → should trigger penalty."""
+        predictions = torch.tensor([-0.1, -0.5]).unsqueeze(1)
         inputs = {}
 
         loss = voltage_constraint.compute_loss(predictions, inputs)
 
-        assert loss.item() > 0, "Under-voltage should produce positive loss"
+        assert loss.item() > 0, "Under-bound capacity should produce positive loss"
 
     def test_boundary_exact_zero_loss(self, voltage_constraint):
-        """Exact boundaries [2.5, 4.2] → should be zero loss."""
-        predictions = torch.tensor([2.5, 4.2]).unsqueeze(1)
+        """Exact boundaries [0.0, 2.5] → should be zero loss."""
+        predictions = torch.tensor([0.0, 2.5]).unsqueeze(1)
         inputs = {}
 
         loss = voltage_constraint.compute_loss(predictions, inputs)
@@ -246,11 +246,11 @@ class TestVoltageConstraint:
 # ──────────────────── TemperatureConstraint ─────────────────
 
 class TestTemperatureConstraint:
-    """Temperature constraint: below T_max ceiling."""
+    """Capacity upper bound constraint: below t_max (capacity ceiling, Ah)."""
 
     def test_below_max_zero_loss(self, temperature_constraint):
-        """Temperature below 45°C → loss should be 0."""
-        predictions = torch.tensor([25.0, 30.0, 40.0]).unsqueeze(1)
+        """Capacity below 2.2 Ah → loss should be 0."""
+        predictions = torch.tensor([1.0, 1.5, 2.0]).unsqueeze(1)
         inputs = {}
 
         loss = temperature_constraint.compute_loss(predictions, inputs)
@@ -258,17 +258,17 @@ class TestTemperatureConstraint:
         assert loss.item() == pytest.approx(0.0, abs=1e-7)
 
     def test_above_max_positive_loss(self, temperature_constraint):
-        """Temperature above 45°C → should trigger penalty."""
-        predictions = torch.tensor([50.0, 60.0]).unsqueeze(1)
+        """Capacity above 2.2 Ah → should trigger penalty."""
+        predictions = torch.tensor([2.5, 3.0]).unsqueeze(1)
         inputs = {}
 
         loss = temperature_constraint.compute_loss(predictions, inputs)
 
-        assert loss.item() > 0, "Over-temperature should produce positive loss"
+        assert loss.item() > 0, "Over-bound capacity should produce positive loss"
 
     def test_exact_boundary_zero_loss(self, temperature_constraint):
-        """Exactly 45°C → should be zero loss."""
-        predictions = torch.tensor([45.0]).unsqueeze(1)
+        """Exactly 2.2 Ah → should be zero loss."""
+        predictions = torch.tensor([2.2]).unsqueeze(1)
         inputs = {}
 
         loss = temperature_constraint.compute_loss(predictions, inputs)
@@ -478,3 +478,66 @@ class TestConstraintWeightSystem:
         constraint.to(torch.device("cpu"))
 
         assert constraint.device == torch.device("cpu")
+
+
+class TestExpert5BugFixes:
+    """Tests specifically targeting bugs found by Expert #5 audit."""
+
+    def test_voltage_constraint_capacity_range_defaults(self):
+        """VoltageConstraint defaults should be capacity-appropriate (0.0-2.5 Ah).
+        
+        Expert #5 Bug: Old defaults v_min=2.5, v_max=4.2 (voltage ranges)
+        applied to capacity predictions (~1.4-2.0 Ah) would always trigger
+        under_voltage penalty, producing incorrect loss.
+        """
+        vc = VoltageConstraint()  # Use defaults
+        assert vc.v_min == 0.0, f"Default v_min should be 0.0 for capacity, got {vc.v_min}"
+        assert vc.v_max == 2.5, f"Default v_max should be 2.5 for capacity, got {vc.v_max}"
+
+        # Capacity predictions in valid range should produce zero loss
+        valid_capacity = torch.tensor([[1.5], [1.8], [2.0], [1.3]])
+        inputs = {"cycles": torch.arange(4, dtype=torch.float32).unsqueeze(1)}
+        loss = vc.compute_loss(valid_capacity, inputs)
+        assert loss.item() == 0.0, (
+            f"Valid capacity predictions [1.3-2.0] within [0.0, 2.5] "
+            f"should produce zero loss, got {loss.item()}"
+        )
+
+    def test_voltage_constraint_penalizes_out_of_range_capacity(self):
+        """Capacity predictions outside [v_min, v_max] should produce positive loss."""
+        vc = VoltageConstraint(v_min=0.0, v_max=2.5)
+        # 3.0 Ah exceeds v_max=2.5
+        out_of_range = torch.tensor([[1.5], [3.0], [2.0]])
+        inputs = {"cycles": torch.arange(3, dtype=torch.float32).unsqueeze(1)}
+        loss = vc.compute_loss(out_of_range, inputs)
+        assert loss.item() > 0.0, "Out-of-range capacity should produce positive loss"
+
+    def test_temperature_constraint_capacity_defaults(self):
+        """TemperatureConstraint defaults should be capacity-appropriate."""
+        tc = TemperatureConstraint()  # Use defaults
+        assert tc.t_max == 2.2, f"Default t_max should be 2.2 Ah, got {tc.t_max}"
+
+        # Valid capacity under 2.2 should produce zero loss
+        valid = torch.tensor([[1.5], [1.8], [2.0]])
+        inputs = {"cycles": torch.arange(3, dtype=torch.float32).unsqueeze(1)}
+        loss = tc.compute_loss(valid, inputs)
+        assert loss.item() == 0.0, f"Valid capacity under 2.2 should be zero loss, got {loss.item()}"
+
+    def test_monotonicity_unsorted_batch_defense(self):
+        """MonotonicityConstraint should sort by cycle when batch is unsorted.
+        
+        Expert #5 Bug: Batch-dimension fallback assumed sorted batches.
+        The fix adds argsort-by-cycle to handle random sampling.
+        """
+        mc = MonotonicityConstraint(weight=0.05)
+
+        # Deliberately unsorted batch: cycles=[100, 0, 50], capacity=[1.0, 2.0, 1.5]
+        # After sorting by cycle: [0→2.0, 50→1.5, 100→1.0] → monotonically decreasing → loss=0
+        predictions = torch.tensor([[1.0], [2.0], [1.5]])
+        inputs = {"cycles": torch.tensor([[100.0], [0.0], [50.0]])}
+
+        loss = mc.compute_loss(predictions, inputs)
+        assert loss.item() == 0.0, (
+            f"After sorting by cycle, sequence [2.0, 1.5, 1.0] is monotone decreasing. "
+            f"Loss should be 0.0, got {loss.item()}"
+        )

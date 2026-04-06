@@ -357,3 +357,30 @@
     - #8 “只有一个测试文件” → 事实错误 (实际 7 个测试文件, 67 tests)
 - **测试结果**: 67/67 全部通过
 - **Commit**: `82e9542` on `main`
+
+### Milestone 28 — 专家 #5 深度代码流追踪 & I1-I5 修复 (2026-04-06)
+- **触发**: 第五位外部专家进行逐行代码流追踪审查 — 迄今技术深度最高
+- **审查方法**: 跨模块数据流分析 (pinn_model.py → mixed_precision.py → constraints.py)
+- **审查范围**: 8 个指控逐条核查 → 2 完全成立, 5 部分成立, 1 不成立
+- **修改文件**: 4 个 (constraints.py, mixed_precision.py, test_physics_constraints.py, default.yaml)
+- **具体修复**:
+    - **I1 — VoltageConstraint/TemperatureConstraint 默认值错误** (P0 Logic Bug):
+      - ✅ `VoltageConstraint`: v_min=2.5V, v_max=4.2V → v_min=0.0, v_max=2.5 (容量范围)
+      - ✅ `TemperatureConstraint`: t_max=45.0°C → t_max=2.2 Ah (容量上限)
+      - ✅ 更新 docstring 说明这些约束在容量预测上下文中的真实语义
+      - **Bug 证据**: main.py 输出 `voltage_safety: loss=0.585526` 对有效容量预测
+    - **I2 — 混合精度训练路径缺失 physics_t** (P0 Training Bug):
+      - ✅ `mixed_precision.py`: 添加 physics_baseline 到预测值再做约束计算
+      - ✅ 与标准训练路径 (L349: `total_predictions = nn_residuals + physics_t`) 对齐
+      - **Bug 证据**: MP 路径对原始 NN 残差做约束, 而非总容量预测
+    - **I3 — MonotonicityConstraint batch 回退脆弱假设** (P1 Defensive):
+      - ✅ `constraints.py`: 添加 `torch.argsort(cycle_vals)` 防御性排序
+      - ✅ 当未来引入 mini-batch/DataLoader 时不会静默失败
+    - **I4 — 针对性测试覆盖** (P1 Testing):
+      - ✅ 4 个新测试: 容量范围默认值、越界惩罚、上限默认值、无序 batch 防御
+      - ✅ 更新 7 个现有测试的断言值到容量适当范围
+    - **I5 — default.yaml 注释澄清** (P2 Doc):
+      - ✅ 添加注释说明此配置用于 LSTM 基线对比, 非 PINN 训练
+- **拒绝的建议** (带理由):
+    - #4 "default.yaml device:cpu/model:lstm 矛盾" → 不成立 (配置名 "baseline_comparison", PINN 有独立参数体系)
+- **测试结果**: 71/71 全部通过 (67 原有 + 4 新增)

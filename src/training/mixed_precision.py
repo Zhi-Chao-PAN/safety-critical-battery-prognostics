@@ -121,8 +121,18 @@ class MixedPrecisionTrainer:
             constraint_breakdown = {}
             
             if constraint_manager is not None and constraint_inputs is not None:
+                # CRITICAL: Apply constraints on TOTAL CAPACITY (NN residuals + physics baseline),
+                # not on raw NN residuals. This matches the standard training path in pinn_model.py.
+                # Without this, monotonicity constraint penalizes residual fluctuations (noise)
+                # instead of capacity rebounds (physics violation).
+                physics_baseline = constraint_inputs.get("physics_baseline")
+                if physics_baseline is not None:
+                    total_predictions = predictions + physics_baseline
+                else:
+                    total_predictions = predictions
+                
                 constraint_loss, constraint_breakdown = constraint_manager.compute_total_loss(
-                    predictions, constraint_inputs, cycles, max_cycle
+                    total_predictions, constraint_inputs, cycles, max_cycle
                 )
             
             # Total loss
