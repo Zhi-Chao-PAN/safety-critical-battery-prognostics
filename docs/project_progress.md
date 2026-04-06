@@ -249,6 +249,34 @@
   - **终稿规模**: 725 行, 79,281 字节, 15 张表格 (TABLE I-XV), 46 篇引文
   - **Commit**: `2e46f85` on `main`
 
+### Milestone 24: 专家审查修复 — P0+P1 全部完成 (2026-04-06)
+  - **背景**: 收到外部专家 7 大类 28 条指控审查，经逐条事实核查 (28% 完全成立, 39% 部分成立, 25% 事实错误, 11% 夸大)，对确实存在的问题立即修复
+  - **P0-1 空壳目录清理**:
+    - ✅ 删除 `src/safety/fta/`, `src/safety/sil/` (占位 ISO 26262 模块)
+    - ✅ 删除 `src/deployment/hardware/`, `src/deployment/realtime/` (前瞻性占位)
+    - ✅ 删除 `src/uncertainty/ensemble/` (空壳)
+    - 验证: 零代码引用这些目录 (grep 确认)
+  - **P0-2 README 测试徽章**:
+    - ✅ 34/34 → 60/60 (实际测试函数数量)
+  - **P0-3 依赖版本统一**:
+    - ✅ requirements.txt: torch>=2.1.2 → torch>=2.0.0 (与 pyproject.toml 一致)
+    - ✅ 移除无用依赖: torchvision, torchaudio
+    - ✅ 添加平台注释: bitsandbytes (Linux-only) 改为注释
+  - **P0-4 VR 声称补充说明**:
+    - ✅ README 标题脚注: "0.00% VR with three-layer defense architecture"
+    - ✅ Cross-cell 描述: 添加 Section V.K 公平对比链接
+    - ✅ 页脚更新: 明确三层防御前提
+  - **P1-5 config/ 合并**:
+    - ✅ config/schema.yaml → configs/schema.yaml
+    - ✅ 删除空 config/ 目录
+    - ✅ 更新 src/utils/schema.py, src/utils/config.py 路径引用
+  - **P1-7 入口重命名**:
+    - ✅ main_simple.py → main.py (主入口)
+    - ✅ main.py → _legacy_main.py (旧版入口)
+    - ✅ 更新 README.md, README_zh.md, CI workflow
+  - **影响**: 15 文件变更, 5 目录删除, 1 目录合并
+  - **Commit**: `6a8c755` on `main`
+
 ## Next Steps
 - **Theorem 4 整合评估**: 评估 DeepSeek R3 的 Theorem 4 证明链是否适合纳入 Section III.E
 - **超参敏感性实验**: 基于 Doubao Round 2 设计方案实现脚本并执行
