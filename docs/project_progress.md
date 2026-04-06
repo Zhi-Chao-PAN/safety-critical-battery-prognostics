@@ -309,3 +309,33 @@
     - **新增测试**: 7 个 fail-safe 单元测试 (NaN×5, unknown-uncertainty×1, sanity×1)
     - **测试结果**: 67/67 全部通过 (60 原有 + 7 新增), 零 regression
     - **Commit**: `e48cc46` on `main`
+
+### Milestone 26 — 专家 #3 工程审计 & G1-G5 修复 (2026-04-06)
+- **触发**: 第三位外部专家对代码可运行性、import 正确性、模块实质性的工程审查
+- **审查范围**: 13 个指控逐条核查 → 3 完全成立, 8 部分成立, 2 不成立
+- **修改文件**: 6 个文件 (main.py, zero_shot_benchmark.py, pinn_model.py, constraints.py, test_physics_constraints.py, README.md)
+- **具体修复**:
+    - **G1 — picp_score ImportError** (P0 Import Bug):
+      - ✅ `zero_shot_benchmark.py L28`: `picp_score` → `calculate_picp` (函数名与 metrics.py 对齐)
+    - **G2 — main.py 重写** (P1 Demo Quality):
+      - ✅ 从无关的 RandomForest baseline 重写为展示四大核心能力:
+        1. SPM 退化曲线拟合 (PhysicsModel)
+        2. 安全决策引擎三级分类 + NaN fail-safe 演示
+        3. FMEA 风险分析 (RPN 计算)
+        4. 物理约束系统 NaN 验证 + 惩罚损失
+    - **G3 — 异常处理升级** (P1 Error Handling):
+      - ✅ `pinn_model.py` 物理 fit 失败: `logger.warning` → `logger.error`
+      - ✅ 日志明确标注 "DEGRADED MODE" (纯数据驱动退化)
+    - **G4 — 魔数提取** (P2 Code Quality):
+      - ✅ `constraints.py`: `100.0` → `NAN_PENALTY_LOSS: float = 100.0` 命名常量
+      - ✅ 添加 5 行工程原理注释 (为什么是 100.0)
+      - ✅ 测试文件同步 import 并使用 `NAN_PENALTY_LOSS`
+    - **G5 — README 测试数量** (P2 Doc Accuracy):
+      - ✅ Badge: `60/60` → `67/67`
+      - ✅ 目录树: `60 unit tests` → `67 unit tests`
+- **拒绝的建议** (带理由):
+    - #9 DataSplitter 逻辑问题 → 不成立 (标准 Nested CV 内层持出)
+    - #11 save/load 不一致 → 不成立 (get() 返回 None 时正确跳过)
+    - #3 "70+ 模型类残次品" → 数据错误 (实际 12 个, 最小 3KB, 无空壳)
+- **测试结果**: 67/67 全部通过, main.py 四个 demo 模块全部执行成功
+- **Commit**: `c5a2c9b` on `main`
