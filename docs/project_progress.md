@@ -396,7 +396,7 @@
     - **J2 — README 透明性** (P0 方法学):
       - ✅ `validate_real_data.py` docstring: 标注 "same-cell noise robustness test, NOT cross-cell generalization"
       - ✅ `robustness_test.py` docstring: 添加 "FAIR COMPARISON PROTOCOL" 文档
-      - ✅ `README.md` L14-16: 修正标题为 "(same-cell noise robustness test)", 更新脚注
+      - ✅ `README.md`: 全局彻查并移除了所有关于 "Cross-Cell Generalization" 的虚假声称，统一修正为 "Same-Cell Noise Robustness"，并更新了相应的文件说明和图表注释。
     - **J3 — SPMResidualConstraint 语义修正** (P1 科学):
       - ✅ `constraints.py`: SPMResidualConstraint 优先使用 `inputs["nn_residuals"]`
       - ✅ `pinn_model.py`: 标准训练路径传递 `nn_residuals` 到 constraint_inputs
