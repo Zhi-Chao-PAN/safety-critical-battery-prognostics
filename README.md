@@ -7,7 +7,7 @@
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-EE4C2C.svg?logo=pytorch)](https://pytorch.org/)
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB.svg?logo=python&logoColor=white)](https://python.org/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/Tests-60%2F60%20Passing-brightgreen.svg)](tests/)
+[![Tests](https://img.shields.io/badge/Tests-67%2F67%20Passing-brightgreen.svg)](tests/)
 [![Violation Rate](https://img.shields.io/badge/Physics%20Violations-0.00%25%20(3--Layer%20Defense)-success.svg)]()
 [![GitHub stars](https://img.shields.io/github/stars/Zhi-Chao-PAN/safety-critical-battery-prognostics?style=social)](https://github.com/Zhi-Chao-PAN/safety-critical-battery-prognostics)
 
@@ -196,7 +196,7 @@ safety-critical-battery-prognostics/
 │   ├── real_data_validation.png    # 12-panel cross-cell figure
 │   └── *.md, *.csv                 # Reports and raw data
 ├── data/                       # NASA + CALCE datasets
-├── tests/                      # 60 unit tests (100% passing)
+├── tests/                      # 67 unit tests (100% passing)
 ├── docs/                       # Documentation & paper draft
 ├── configs/                    # YAML configurations (schema + experiments)
 └── robustness_test.py          # Main robustness pipeline

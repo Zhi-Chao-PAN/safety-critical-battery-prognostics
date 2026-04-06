@@ -22,6 +22,13 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 
+# ── Safety Constants ────────────────────────────────────────────
+# When NaN/Inf is detected in predictions, return this penalty loss
+# instead of 0.0 (which silently disables physics constraints).
+# Value must be large enough to dominate the loss landscape and
+# force optimizer recovery, but finite to avoid gradient explosion.
+NAN_PENALTY_LOSS: float = 100.0
+
 logger = logging.getLogger(__name__)
 
 
@@ -137,7 +144,7 @@ class PhysicsConstraint(ABC):
         Instead of returning 0.0 (which silently disables physics constraints),
         return a large but finite penalty that forces the optimizer to recover.
         """
-        return torch.tensor(100.0, device=self.device, requires_grad=False)
+        return torch.tensor(NAN_PENALTY_LOSS, device=self.device, requires_grad=False)
     
     def to(self, device: torch.device) -> "PhysicsConstraint":
         """Move constraint to specified device."""

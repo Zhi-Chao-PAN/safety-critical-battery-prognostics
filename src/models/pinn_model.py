@@ -256,7 +256,12 @@ class PINNModel(BatteryModel):
             self._physics_params = self.physics.params.get("train")
             logger.info(f"Physics fit successful: {self._physics_params}")
         except Exception as e:
-            logger.warning(f"Physics fit failed: {e}. Using zero baseline.")
+            logger.error(
+                f"Physics fit FAILED: {e}. "
+                f"DEGRADED MODE: Model will operate as pure data-driven NN "
+                f"(no physics baseline). Physical constraint enforcement during "
+                f"training may be less effective."
+            )
             self._physics_params = None
 
         # Step 2: Compute physics predictions and residuals

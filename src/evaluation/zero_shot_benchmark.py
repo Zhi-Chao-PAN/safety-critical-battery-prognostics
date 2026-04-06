@@ -25,7 +25,7 @@ from scipy import stats
 from src.data.unified_loader import UnifiedDataLoader
 from src.models.base import BatteryModel
 from src.uncertainty.scoring import compute_all_metrics
-from src.utils.metrics import picp_score
+from src.utils.metrics import calculate_picp
 
 logger = logging.getLogger(__name__)
 

@@ -24,6 +24,7 @@ from src.physics.constraints import (
     TemperatureConstraint,
     ConstraintManager,
     create_default_constraint_manager,
+    NAN_PENALTY_LOSS,
 )
 from src.models.pinn_model import AdaptiveLossWeighter
 
@@ -120,7 +121,7 @@ class TestMonotonicityConstraint:
 
         loss = monotonic_constraint.compute_loss(predictions, inputs)
 
-        assert loss.item() == pytest.approx(100.0, abs=1e-5), \
+        assert loss.item() == pytest.approx(NAN_PENALTY_LOSS, abs=1e-5), \
             f"NaN input should return HIGH PENALTY (100.0), got {loss.item()}"
 
     def test_inf_input_returns_penalty_loss(self, monotonic_constraint):
@@ -133,7 +134,7 @@ class TestMonotonicityConstraint:
 
         loss = monotonic_constraint.compute_loss(predictions, inputs)
 
-        assert loss.item() == pytest.approx(100.0, abs=1e-5), \
+        assert loss.item() == pytest.approx(NAN_PENALTY_LOSS, abs=1e-5), \
             f"Inf input should return HIGH PENALTY (100.0), got {loss.item()}"
 
     def test_single_sample_returns_zero_loss(self, monotonic_constraint):
