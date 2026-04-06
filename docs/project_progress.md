@@ -339,3 +339,21 @@
     - #3 "70+ 模型类残次品" → 数据错误 (实际 12 个, 最小 3KB, 无空壳)
 - **测试结果**: 67/67 全部通过, main.py 四个 demo 模块全部执行成功
 - **Commit**: `c5a2c9b` on `main`
+
+### Milestone 27 — 专家 #4 声称-实现对应审计 & H1-H3 修复 (2026-04-06)
+- **触发**: 第四位外部专家对安全声称、实验设计、依赖管理的声称-实现对应审查
+- **审查范围**: 12 个指控逐条核查 → 3 完全成立, 8 部分成立, 1 不成立
+- **修改文件**: 3 个 (pyproject.toml, _legacy_main.py [deleted], robustness_test.py)
+- **具体修复**:
+    - **H1 — 僵尸依赖** (P0 Dependency):
+      - ✅ `pyproject.toml`: 移除 `pymc>=5.0.0` 和 `arviz>=0.15.0` (代码中零处引用)
+    - **H2 — 遗留文件** (P2 Cleanup):
+      - ✅ 删除 `_legacy_main.py` (864B 早期开发残留)
+    - **H3 — 数据来源标注** (P2 Transparency):
+      - ✅ `robustness_test.py` 添加“SYNTHETIC DATA”声明 + 交叉引用 `scripts/validate_real_data.py`
+- **拒绝的建议** (带理由):
+    - #1 物理约束“软约束”问题 → 三层防御是设计意图 (L1=软+L2=EMA+L3=Running Min 硬约束)
+    - #2 “合成数据”指控 → 专家未看到 `scripts/validate_real_data.py` (399行真实 CALCE 验证)
+    - #8 “只有一个测试文件” → 事实错误 (实际 7 个测试文件, 67 tests)
+- **测试结果**: 67/67 全部通过
+- **Commit**: `82e9542` on `main`
