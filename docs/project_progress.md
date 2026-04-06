@@ -283,3 +283,29 @@
 - **NASA Validation**: 迁移至 NASA B0005-B0018 零样本验证
 - **Phase 3 (AutoDL GPU)**: 等条件就绪后启动 QLoRA 训练
 - **IEEE 格式转换**: 将 Markdown 终稿转换为 LaTeX 双栏 IEEE Transactions 排版
+
+25. **Milestone #25: Expert #2 Safety-Critical Audit & Remediation** (2026-04-06)
+    - **背景**: 第二位技术专家从 ISO 26262 功能安全角度审查项目，提出 11 条指控。
+    - **审查结果**: 5 条完全成立 (45%), 5 条部分成立 (45%), 1 条范畴越界 (9%)。
+    - **驳回结论**: "推倒重来"犯了范畴错误 — 用量产 ASIL-D 标准审查学术研究原型。
+    - **F1 — NaN Fail-Safe** (P0 Code Bug):
+      - ✅ `decision_engine.decide()`: 添加 `math.isfinite()` 四参数守卫
+      - ✅ NaN/Inf 任一输入 → 立即 RED (此前: 静默穿透到 GREEN)
+    - **F2 — Unknown Uncertainty Fail-Safe** (P0 Design Flaw):
+      - ✅ `decide_batch()`: `epistemic_stds=None` → `eps_high` (最高阈值)
+      - ✅ 未知不确定性 → 至少 YELLOW (此前: 默认 zeros → GREEN)
+    - **F3 — ISO 文档矛盾** (P0 Doc Bug):
+      - ✅ 修复 ASIL-C/D 矛盾: 所有 SG 统一为 ASIL-C 或以下
+      - ✅ 添加显著免责声明: "academic feasibility study, NOT compliance declaration"
+      - ✅ 添加诚实的 Gap Analysis 表格 (Part 2-9 逐项标注状态)
+    - **F4 — 物理约束静默禁用** (P1 Training Safety):
+      - ✅ `constraints.py`: NaN 时返回 penalty=100.0 (此前: 返回 0.0 静默禁用)
+      - ✅ `validate()` 日志升级: WARNING → ERROR, 添加 `_nan_count` 追踪
+      - ✅ `validate_all()` 日志升级: WARNING → CRITICAL
+    - **F5 — 虚假测试声称** (P1 Doc-Code Gap):
+      - ✅ ISO 文档移除"故障注入测试"虚假声称
+      - ✅ V&V 章节重写为与实际 `tests/` 一致的真实描述
+      - ✅ 局限性声明: impulse noise, sensor bias 未覆盖
+    - **新增测试**: 7 个 fail-safe 单元测试 (NaN×5, unknown-uncertainty×1, sanity×1)
+    - **测试结果**: 67/67 全部通过 (60 原有 + 7 新增), 零 regression
+    - **Commit**: `e48cc46` on `main`
