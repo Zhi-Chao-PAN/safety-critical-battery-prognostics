@@ -5,9 +5,15 @@ Three-tier classification:
   GREEN:  Normal operation
   YELLOW: Reduce load, increase monitoring
   RED:    Stop operation, trigger maintenance
+
+Fail-Safe Design Principles:
+  1. NaN/Inf inputs → immediate RED (never pass through to GREEN)
+  2. Unknown uncertainty (None) → YELLOW with explicit warning
+  3. All comparison operators are NaN-safe via math.isfinite() guard
 """
 
 import logging
+import math
 from dataclasses import dataclass
 from enum import Enum
 
@@ -58,7 +64,34 @@ class SafetyDecisionEngine:
         rul_upper: float,
         epistemic_std: float = 0.0,
     ) -> SafetyDecision:
-        """Make a safety decision for a single prediction."""
+        """
+        Make a safety decision for a single prediction.
+
+        Fail-safe behavior:
+          - NaN/Inf in any input → immediate RED
+          - Negative RUL values → immediate RED
+        """
+        # ── F1 FIX: NaN/Inf fail-safe guard ──────────────────────────
+        inputs_valid = all(
+            math.isfinite(v) for v in (rul_mean, rul_lower, rul_upper, epistemic_std)
+        )
+        if not inputs_valid:
+            logger.error(
+                f"FAIL-SAFE: Non-finite input detected "
+                f"(mean={rul_mean}, lower={rul_lower}, upper={rul_upper}, "
+                f"eps_std={epistemic_std}). Defaulting to RED."
+            )
+            return SafetyDecision(
+                level=SafetyLevel.RED,
+                rul_estimate=float('nan'),
+                confidence_lower=float('nan'),
+                confidence_upper=float('nan'),
+                epistemic_std=float('nan'),
+                action="STOP operation. Non-finite sensor data detected. "
+                       "Trigger immediate diagnostic and maintenance inspection.",
+                reason="FAIL-SAFE: NaN or Inf detected in prediction inputs. "
+                       "Data integrity compromised.",
+            )
 
         # RED: Critical RUL or very high uncertainty
         if rul_lower < self.rul_critical or epistemic_std > self.eps_high:
@@ -110,9 +143,22 @@ class SafetyDecisionEngine:
         uppers: np.ndarray,
         epistemic_stds: np.ndarray | None = None,
     ) -> list[SafetyDecision]:
-        """Make safety decisions for a batch of predictions."""
+        """
+        Make safety decisions for a batch of predictions.
+
+        Fail-safe: when epistemic_stds is None (uncertainty unknown),
+        all samples receive epistemic_std = eps_high (maximum threshold),
+        which forces at minimum YELLOW classification.
+        """
+        # ── F2 FIX: Unknown uncertainty → fail-safe to high, not zero ──
         if epistemic_stds is None:
-            epistemic_stds = np.zeros_like(means)
+            logger.warning(
+                "FAIL-SAFE: epistemic_stds is None (uncertainty unknown). "
+                "Defaulting to eps_high=%.1f for all samples. "
+                "This will trigger at minimum YELLOW classification.",
+                self.eps_high,
+            )
+            epistemic_stds = np.full_like(means, fill_value=self.eps_high)
 
         return [
             self.decide(float(m), float(lo), float(hi), float(e))

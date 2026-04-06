@@ -46,6 +46,7 @@ class PhysicsConstraint(ABC):
         self.base_weight: float = weight
         self.adaptive: bool = adaptive
         self.device: torch.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self._nan_count: int = 0  # Track NaN/Inf occurrences for diagnostics
         
     @abstractmethod
     def compute_loss(self, 
@@ -110,15 +111,33 @@ class PhysicsConstraint(ABC):
         """
         # Check for NaN/Inf
         if torch.any(torch.isnan(predictions)) or torch.any(torch.isinf(predictions)):
-            logger.warning(f"Constraint {self.name}: NaN/Inf detected in predictions")
+            self._nan_count += 1
+            logger.error(
+                f"SAFETY: Constraint {self.name}: NaN/Inf detected in predictions "
+                f"(occurrence #{self._nan_count}). Physics constraint will apply "
+                f"HIGH PENALTY loss instead of being silently disabled."
+            )
             return False
         
         # Check for extreme values
         if torch.max(torch.abs(predictions)) > 1e6:
-            logger.warning(f"Constraint {self.name}: Extreme values in predictions")
+            logger.error(
+                f"SAFETY: Constraint {self.name}: Extreme values detected "
+                f"(max abs = {torch.max(torch.abs(predictions)):.2e}). "
+                f"Applying HIGH PENALTY loss."
+            )
             return False
             
         return True
+    
+    def _nan_penalty_loss(self) -> torch.Tensor:
+        """
+        Return a high penalty loss when NaN/Inf is detected.
+        
+        Instead of returning 0.0 (which silently disables physics constraints),
+        return a large but finite penalty that forces the optimizer to recover.
+        """
+        return torch.tensor(100.0, device=self.device, requires_grad=False)
     
     def to(self, device: torch.device) -> "PhysicsConstraint":
         """Move constraint to specified device."""
@@ -156,7 +175,7 @@ class MonotonicityConstraint(PhysicsConstraint):
         """
         # Validate inputs
         if not self.validate(predictions, inputs):
-            return torch.tensor(0.0, device=self.device)
+            return self._nan_penalty_loss()
         
         # Ensure predictions are 2D [batch_size, seq_len]
         if predictions.dim() == 1:
@@ -214,7 +233,7 @@ class SPMResidualConstraint(PhysicsConstraint):
         """
         # Validate inputs
         if not self.validate(predictions, inputs):
-            return torch.tensor(0.0, device=self.device)
+            return self._nan_penalty_loss()
         
         # Simple L2 penalty on residuals
         # predictions should be the NN residual (difference from physics baseline)
@@ -256,7 +275,7 @@ class VoltageConstraint(PhysicsConstraint):
         """
         # Validate inputs
         if not self.validate(predictions, inputs):
-            return torch.tensor(0.0, device=self.device)
+            return self._nan_penalty_loss()
         
         # Penalize voltages outside safe range
         over_voltage = F.relu(predictions - self.v_max)  # [batch_size, 1]
@@ -299,7 +318,7 @@ class TemperatureConstraint(PhysicsConstraint):
         """
         # Validate inputs
         if not self.validate(predictions, inputs):
-            return torch.tensor(0.0, device=self.device)
+            return self._nan_penalty_loss()
         
         # Penalize temperatures above safe limit
         over_temp = F.relu(predictions - self.t_max)  # [batch_size, 1]
@@ -389,11 +408,15 @@ class ConstraintManager:
     
     def validate_all(self, predictions: torch.Tensor, inputs: Dict[str, torch.Tensor]) -> bool:
         """Validate all constraints for numerical stability."""
+        all_valid = True
         for name, constraint in self.constraints.items():
             if not constraint.validate(predictions, inputs):
-                self.logger.warning(f"Constraint {name} validation failed")
-                return False
-        return True
+                self.logger.critical(
+                    f"SAFETY-CRITICAL: Constraint {name} validation FAILED. "
+                    f"NaN/Inf/extreme values detected. Model outputs may be unsafe."
+                )
+                all_valid = False
+        return all_valid
     
     def to(self, device: torch.device) -> "ConstraintManager":
         """Move all constraints to specified device."""

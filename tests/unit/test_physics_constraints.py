@@ -109,25 +109,32 @@ class TestMonotonicityConstraint:
         assert loss.item() == pytest.approx(0.0, abs=1e-7), \
             "Constant capacity should yield zero monotonicity loss"
 
-    def test_nan_input_returns_zero_loss(self, monotonic_constraint):
-        """NaN in predictions → validate() should catch it and return 0."""
+    def test_nan_input_returns_penalty_loss(self, monotonic_constraint):
+        """NaN in predictions → validate() catches it, returns HIGH PENALTY (not zero).
+        
+        F4 safety fix: NaN must not silently disable physics constraints.
+        The constraint returns 100.0 penalty to force optimizer recovery.
+        """
         predictions = torch.tensor([1.0, float('nan'), 0.8]).unsqueeze(1)
         inputs = {"cycles": torch.arange(3, dtype=torch.float32).unsqueeze(1)}
 
         loss = monotonic_constraint.compute_loss(predictions, inputs)
 
-        assert loss.item() == pytest.approx(0.0, abs=1e-7), \
-            "NaN input should be caught by validation, returning zero loss"
+        assert loss.item() == pytest.approx(100.0, abs=1e-5), \
+            f"NaN input should return HIGH PENALTY (100.0), got {loss.item()}"
 
-    def test_inf_input_returns_zero_loss(self, monotonic_constraint):
-        """Inf in predictions → should be caught by validation."""
+    def test_inf_input_returns_penalty_loss(self, monotonic_constraint):
+        """Inf in predictions → should return HIGH PENALTY (not zero).
+        
+        F4 safety fix: Inf must not silently disable physics constraints.
+        """
         predictions = torch.tensor([1.0, float('inf'), 0.8]).unsqueeze(1)
         inputs = {"cycles": torch.arange(3, dtype=torch.float32).unsqueeze(1)}
 
         loss = monotonic_constraint.compute_loss(predictions, inputs)
 
-        assert loss.item() == pytest.approx(0.0, abs=1e-7), \
-            "Inf input should be caught by validation, returning zero loss"
+        assert loss.item() == pytest.approx(100.0, abs=1e-5), \
+            f"Inf input should return HIGH PENALTY (100.0), got {loss.item()}"
 
     def test_single_sample_returns_zero_loss(self, monotonic_constraint):
         """Single sample → no diff to compute, loss should be 0."""
