@@ -3,7 +3,7 @@
 Schema loading utilities for configuration-driven modeling.
 
 This module provides functions to load and validate the project's
-schema configuration file (config/schema.yaml), ensuring consistent
+schema configuration file (configs/schema.yaml), ensuring consistent
 feature definitions across all models.
 """
 
@@ -12,7 +12,7 @@ from typing import Any
 
 import yaml
 
-SCHEMA_PATH = Path("config/schema.yaml")
+SCHEMA_PATH = Path("configs/schema.yaml")
 
 
 def load_schema(schema_path: Path = SCHEMA_PATH) -> dict[str, Any]:
@@ -26,7 +26,7 @@ def load_schema(schema_path: Path = SCHEMA_PATH) -> dict[str, Any]:
         - Modeling configurations (standardization, Bayesian priors)
     
     Args:
-        schema_path: Path to the schema YAML file. Defaults to 'config/schema.yaml'.
+        schema_path: Path to the schema YAML file. Defaults to 'configs/schema.yaml'.
         
     Returns:
         Dictionary containing the parsed schema configuration.

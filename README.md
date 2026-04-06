@@ -7,11 +7,13 @@
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-EE4C2C.svg?logo=pytorch)](https://pytorch.org/)
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB.svg?logo=python&logoColor=white)](https://python.org/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/Tests-34%2F34%20Passing-brightgreen.svg)](tests/)
-[![Violation Rate](https://img.shields.io/badge/Physics%20Violations-0.00%25-success.svg)]()
+[![Tests](https://img.shields.io/badge/Tests-60%2F60%20Passing-brightgreen.svg)](tests/)
+[![Violation Rate](https://img.shields.io/badge/Physics%20Violations-0.00%25%20(3--Layer%20Defense)-success.svg)]()
 [![GitHub stars](https://img.shields.io/github/stars/Zhi-Chao-PAN/safety-critical-battery-prognostics?style=social)](https://github.com/Zhi-Chao-PAN/safety-critical-battery-prognostics)
 
-*A three-layer physics defense achieving **0.00% physical violation rate** on 6 real CALCE battery cells under extreme noise — validated without hyperparameter retuning.*
+*A three-layer physics defense achieving **0.00% physical violation rate**¹ on 6 real CALCE battery cells under extreme noise — validated without hyperparameter retuning.*
+
+<sub>¹ 0.00% VR is achieved with the complete three-layer defense architecture (Constraint Training + Residual Clamping + Monotonic Projection). See [Section V.E](docs/archive/IEEE_Whitepaper_PINN_Battery_RUL_Complete.md) for ablation results and [Section V.K](docs/archive/IEEE_Whitepaper_PINN_Battery_RUL_Complete.md) for fair comparison with identical post-processing applied to all baselines.</sub>
 
 [📄 Paper Draft](docs/archive/IEEE_Whitepaper_PINN_Battery_RUL_Complete.md) · [📊 Full Results](docs/comprehensive_experimental_results.md) · [🇨🇳 简体中文](README_zh.md)
 
@@ -86,7 +88,7 @@ Validated on real-world data **without any hyperparameter retuning**:
 | CS2_37 | 1,037 | **0.00%** ✅ | 49.52% |
 | CS2_38 | 1,076 | **0.00%** ✅ | 49.95% |
 
-> **6/6 cells at 0.00% violation rate.** The physics shield is not an artifact of synthetic data.
+> **6/6 cells at 0.00% violation rate with three-layer defense.** The physics shield is not an artifact of synthetic data — see [fairness validation (Section V.K)](docs/archive/IEEE_Whitepaper_PINN_Battery_RUL_Complete.md) for identical post-processing applied to all baselines.
 
 ### Computational Efficiency
 
@@ -153,7 +155,7 @@ cd safety-critical-battery-prognostics
 pip install -r requirements.txt
 
 # Run basic demonstration
-python main_simple.py
+python main.py
 
 # Run robustness test (PINN vs LSTM under 50% noise)
 python robustness_test.py
@@ -182,7 +184,7 @@ safety-critical-battery-prognostics/
 │   ├── evaluation/             #   Metrics & performance profiling
 │   ├── uncertainty/            #   Conformal prediction, MC Dropout
 │   ├── safety/                 #   LLM-FMEA diagnostic engine
-│   ├── deployment/             #   ONNX export pipeline
+│   ├── deployment/             #   ONNX export & quantization pipeline
 │   └── infrastructure/         #   Config schema, dataset management
 ├── scripts/                    # Experiment scripts
 │   ├── ablation_defense_layers.py  # Defense layer ablation (5 variants)
@@ -194,9 +196,9 @@ safety-critical-battery-prognostics/
 │   ├── real_data_validation.png    # 12-panel cross-cell figure
 │   └── *.md, *.csv                 # Reports and raw data
 ├── data/                       # NASA + CALCE datasets
-├── tests/                      # 34 unit tests (100% passing)
+├── tests/                      # 60 unit tests (100% passing)
 ├── docs/                       # Documentation & paper draft
-├── configs/                    # YAML configurations
+├── configs/                    # YAML configurations (schema + experiments)
 └── robustness_test.py          # Main robustness pipeline
 ```
 
@@ -265,6 +267,6 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 *If this project advances your research, please consider giving it a ⭐*
 
-**0.00% physical violations · 203× faster inference · 6/6 real cells validated**
+**0.00% physical violations (three-layer defense) · 203× faster inference · 6/6 real cells validated**
 
 </div>

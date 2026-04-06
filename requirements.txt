@@ -1,12 +1,13 @@
-# 🔋 Safety-Critical Battery Prognostics: Core Dependencies
+# 🔋 Safety-Critical Battery Prognostics: Full Research Environment
+#
+# NOTE: For minimal installation, use: pip install -e .
+# This file installs ALL dependencies for the full research pipeline.
 
 ## [Core Runtime]
 numpy>=1.24.0
 pandas>=2.0.0
 scipy>=1.10.0
-torch>=2.1.2
-torchvision
-torchaudio
+torch>=2.0.0
 matplotlib>=3.7.0
 seaborn>=0.12.0
 scikit-learn>=1.3.0
@@ -20,8 +21,9 @@ accelerate>=0.28.0
 
 ## [Optimization & Quantization]
 # For Low-Rank Adaptation (LoRA) and 4/8-bit Quantization
+# NOTE: bitsandbytes requires Linux; skip on Windows
 peft>=0.10.0
-bitsandbytes>=0.41.1
+# bitsandbytes>=0.41.1  # Linux-only; uncomment on AutoDL/Linux
 
 ## [Safety & Deployment]
 # FMEA LLM Agent

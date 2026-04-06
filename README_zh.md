@@ -45,7 +45,7 @@ cd safety-critical-battery-prognostics
 pip install -r requirements.txt
 
 # 3. 运行快速演示
-python main_simple.py
+python main.py
 ```
 
 这个演示会：
@@ -93,8 +93,8 @@ safety-critical-battery-prognostics/
 ├── tests/                  # 单元测试
 ├── figures/                # 可视化结果
 ├── results/                # 实验结果
-├── main_simple.py          # 简化演示入口（推荐先试这个）
-├── main.py                 # 完整版本入口（LEGACY - 不推荐新用户使用）
+├── main.py                 # 快速演示入口（推荐先试这个）
+├── _legacy_main.py         # 旧版完整入口（LEGACY - 不推荐新用户使用）
 ├── requirements.txt        # Python依赖
 ├── pyproject.toml          # 项目配置
 └── README.md               # 本文件

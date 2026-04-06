@@ -38,8 +38,7 @@ jobs:
         
     - name: Test imports
       run: |
-        # Test that both entry points can be imported
-        python -c "import main_simple; print('main_simple: Import OK')"
+        # Test that main entry point can be imported
         python -c "import main; print('main: Import OK')"
         
     - name: Run unit tests

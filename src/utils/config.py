@@ -39,7 +39,7 @@ class AppConfig(BaseModel):
     features: FeaturesConfig
     modeling: ModelingConfig
 
-def load_config(config_path: Path = Path("config/schema.yaml")) -> AppConfig:
+def load_config(config_path: Path = Path("configs/schema.yaml")) -> AppConfig:
     """
     Load and validate configuration using Pydantic.
     """
