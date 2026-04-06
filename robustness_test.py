@@ -2,6 +2,10 @@
 """
 极端工况抗噪对比实验脚本 - PINN电池预测项目鲁棒性评估
 
+⚠️ DATA SOURCE: This script uses SYNTHETIC degradation data for rapid
+   demonstration and algorithm comparison. For real-world CALCE battery
+   validation results, see: scripts/validate_real_data.py
+
 功能：
 1. 注入50%强度高斯噪声模拟传感器故障/恶劣环境
 2. 对比PINN模型（开启物理约束）与纯数据驱动模型（LSTM/TCN）
