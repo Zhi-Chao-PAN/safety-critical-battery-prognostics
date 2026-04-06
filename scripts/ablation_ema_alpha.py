@@ -79,7 +79,7 @@ def main():
     robust_cm.add_constraint(MonotonicityConstraint(weight=1.0, adaptive=True))
     robust_cm.add_constraint(SPMResidualConstraint(weight=0.1, adaptive=True))
     robust_cm.add_constraint(VoltageConstraint(v_min=0.0, v_max=2.5, weight=0.05, adaptive=True))
-    robust_cm.add_constraint(TemperatureConstraint(t_max=45.0, weight=0.01, adaptive=True))
+    robust_cm.add_constraint(TemperatureConstraint(t_max=2.2, weight=0.01, adaptive=True))
     
     pinn_model = PINNModel(
         input_dim=2, hidden_dim=64, dropout=0.05,

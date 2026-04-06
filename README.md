@@ -75,9 +75,9 @@ Each layer addresses a **distinct failure mode**. Our ablation study proves they
 | Inference Latency | **11 ms** ⚡ | 2,230 ms |
 | Speed Advantage | **203× faster** | — |
 
-### Cross-Cell Generalization (6 Real CALCE Batteries)
+### Same-Cell Noise Robustness (6 Real CALCE Batteries)
 
-Validated on real-world data **without any hyperparameter retuning**:
+Validated on real-world data under extreme artificial noise **without any hyperparameter retuning**:
 
 | Cell | Cycles | PINN VR | LSTM VR |
 |------|--------|---------|---------|
@@ -188,12 +188,12 @@ safety-critical-battery-prognostics/
 │   └── infrastructure/         #   Config schema, dataset management
 ├── scripts/                    # Experiment scripts
 │   ├── ablation_defense_layers.py  # Defense layer ablation (5 variants)
-│   ├── validate_real_data.py       # Cross-cell CALCE validation
+│   ├── validate_real_data.py       # Same-cell robust validation (noise)
 │   ├── run_ablation_study.py       # Architecture ablation
 │   └── ...
 ├── robustness_results/         # All robustness experiment outputs
 │   ├── ablation_defense_layers.png # IEEE-grade ablation figure
-│   ├── real_data_validation.png    # 12-panel cross-cell figure
+│   ├── real_data_validation.png    # 12-panel same-cell noise figure
 │   └── *.md, *.csv                 # Reports and raw data
 ├── data/                       # NASA + CALCE datasets
 ├── tests/                      # 67 unit tests (100% passing)
@@ -226,7 +226,7 @@ python scripts/ablation_defense_layers.py
 # → robustness_results/ablation_defense_layers.png
 # → robustness_results/ablation_defense_report.md
 
-# Reproduce cross-cell validation (Table IV in paper)
+# Reproduce same-cell noise validation (Table IV in paper)
 python scripts/validate_real_data.py
 # → robustness_results/real_data_validation.png
 # → robustness_results/real_data_validation_report.md

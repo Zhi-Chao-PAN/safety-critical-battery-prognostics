@@ -122,7 +122,7 @@ def build_constraint_manager() -> ConstraintManager:
     cm.add_constraint(MonotonicityConstraint(weight=1.0, adaptive=True))
     cm.add_constraint(SPMResidualConstraint(weight=0.1, adaptive=True))
     cm.add_constraint(VoltageConstraint(v_min=0.0, v_max=2.5, weight=0.05, adaptive=True))
-    cm.add_constraint(TemperatureConstraint(t_max=45.0, weight=0.01, adaptive=True))
+    cm.add_constraint(TemperatureConstraint(t_max=2.2, weight=0.01, adaptive=True))
     return cm
 
 
@@ -156,7 +156,7 @@ def run_cell_experiment(cell_path: Path, noise_level: float = 0.5) -> CellResult
 
     # Dynamically set voltage constraint based on actual capacity range
     cap_max = float(np.max(capacity)) * 1.1
-    cm.constraints[2] = VoltageConstraint(v_min=0.0, v_max=cap_max, weight=0.05, adaptive=True)
+    cm.constraints["voltage_safety"] = VoltageConstraint(v_min=0.0, v_max=cap_max, weight=0.05, adaptive=True)
 
     pinn = PINNModel(
         input_dim=2,

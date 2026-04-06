@@ -33,7 +33,7 @@ class TrainingPipeline:
     def __init__(
         self,
         features: list[str],
-        target: str = "rul",
+        target: str = "capacity",
         group_col: str = "battery_id",
         checkpoint_dir: str = "checkpoints",
         log_dir: str = "logs",
