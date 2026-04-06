@@ -131,6 +131,9 @@ class MixedPrecisionTrainer:
                 else:
                     total_predictions = predictions
                 
+                # Pass nn_residuals for SPMResidualConstraint (Expert #6 fix)
+                constraint_inputs["nn_residuals"] = predictions
+                
                 constraint_loss, constraint_breakdown = constraint_manager.compute_total_loss(
                     total_predictions, constraint_inputs, cycles, max_cycle
                 )

@@ -250,7 +250,22 @@ class PINNModel(BatteryModel):
         cycles = X[:, 0] if X.ndim > 1 else X
         self._max_cycle = float(np.max(cycles))
 
-        # Step 1: Fit physics model on capacity (approximate from RUL)
+        # Step 1: Fit physics model on capacity degradation curve
+        # WARNING: The physics model Q(n) = Q0 - a*sqrt(n) - b*n is designed for
+        # capacity fade. If y contains RUL values (countdown to EOL), the fitted
+        # parameters will have no physical meaning. (Expert #6 audit)
+        
+        # Heuristic: detect if y looks like RUL (ends near 0, spans ~cycle range)
+        y_min, y_max = float(np.min(y)), float(np.max(y))
+        if y_min < 1.0 and y_max > 10.0 and abs(y_max - self._max_cycle) < self._max_cycle * 0.5:
+            logger.warning(
+                f"TARGET SEMANTIC WARNING: y range [{y_min:.1f}, {y_max:.1f}] looks like RUL "
+                f"(max_cycle={self._max_cycle:.0f}). The capacity-fade physics model "
+                f"Q(n)=Q0-a√n-b·n is designed for capacity values (e.g., 1.0-2.5 Ah), "
+                f"not RUL countdowns. Physics fit may produce meaningless parameters. "
+                f"Consider using target='capacity' for physics-informed training."
+            )
+        
         try:
             self.physics.fit(cycles, y, battery_id="train")
             self._physics_params = self.physics.params.get("train")
@@ -347,6 +362,9 @@ class PINNModel(BatteryModel):
                 # instead of capacity rebounds (physics violation).
                 # ────────────────────────────────────────────────
                 total_predictions = nn_residuals + physics_t
+                
+                # Pass nn_residuals for SPMResidualConstraint (Expert #6 fix)
+                constraint_inputs["nn_residuals"] = nn_residuals
                 
                 # Constraint losses (on total capacity predictions)
                 constraint_loss, constraint_breakdown = self.constraint_manager.compute_total_loss(

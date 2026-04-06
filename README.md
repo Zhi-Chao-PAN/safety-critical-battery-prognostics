@@ -7,13 +7,13 @@
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-EE4C2C.svg?logo=pytorch)](https://pytorch.org/)
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB.svg?logo=python&logoColor=white)](https://python.org/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/Tests-71%2F71%20Passing-brightgreen.svg)](tests/)
+[![Tests](https://img.shields.io/badge/Tests-74%2F74%20Passing-brightgreen.svg)](tests/)
 [![Violation Rate](https://img.shields.io/badge/Physics%20Violations-0.00%25%20(3--Layer%20Defense)-success.svg)]()
 [![GitHub stars](https://img.shields.io/github/stars/Zhi-Chao-PAN/safety-critical-battery-prognostics?style=social)](https://github.com/Zhi-Chao-PAN/safety-critical-battery-prognostics)
 
-*A three-layer physics defense achieving **0.00% physical violation rate**¹ on 6 real CALCE battery cells under extreme noise — validated without hyperparameter retuning.*
+*A three-layer physics defense achieving **0.00% physical violation rate**¹ on 6 real CALCE battery cells under extreme noise (same-cell noise robustness test).*
 
-<sub>¹ 0.00% VR is achieved with the complete three-layer defense architecture (Constraint Training + Residual Clamping + Monotonic Projection). See [Section V.E](docs/archive/IEEE_Whitepaper_PINN_Battery_RUL_Complete.md) for ablation results and [Section V.K](docs/archive/IEEE_Whitepaper_PINN_Battery_RUL_Complete.md) for fair comparison with identical post-processing applied to all baselines.</sub>
+<sub>¹ 0.00% VR is achieved with the complete three-layer defense architecture (Constraint Training + Residual Clamping + Monotonic Projection). Identical post-processing (EMA smoothing + monotonic projection) is applied to all baselines for fair comparison. The validation protocol trains and tests on the same cell (noise injection), demonstrating noise rejection rather than cross-cell generalization. See [Section V.E](docs/archive/IEEE_Whitepaper_PINN_Battery_RUL_Complete.md) for ablation results.</sub>
 
 [📄 Paper Draft](docs/archive/IEEE_Whitepaper_PINN_Battery_RUL_Complete.md) · [📊 Full Results](docs/comprehensive_experimental_results.md) · [🇨🇳 简体中文](README_zh.md)
 

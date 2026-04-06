@@ -78,7 +78,7 @@ class TrainingPipeline:
             m.fit(X_train, y_train)
             train_time = time.time() - t0
 
-            # Evaluate on test
+            # Evaluate on test (for reporting)
             X_test = test_df[self.features].values
             y_test = test_df[self.target].values
             mean, lower, upper = m.predict(X_test)
@@ -93,12 +93,22 @@ class TrainingPipeline:
             metrics["train_time_s"] = round(train_time, 2)
             all_metrics.append(metrics)
 
-            # Track best
-            if metrics["RMSE"] < best_rmse:
-                best_rmse = metrics["RMSE"]
+            # Track best model using VALIDATION set (not test set)
+            # This prevents test-set information leak in checkpoint selection.
+            X_val = val_df[self.features].values
+            y_val = val_df[self.target].values
+            val_mean, _, _ = m.predict(X_val)
+            if len(val_mean) > 0:
+                y_val_eval = y_val[-len(val_mean):]
+                val_rmse = float(np.sqrt(np.mean((val_mean - y_val_eval) ** 2)))
+            else:
+                val_rmse = float("inf")
+
+            if val_rmse < best_rmse:
+                best_rmse = val_rmse
                 best_model = m
 
-            logger.info(f"  Fold {test_id}: RMSE={metrics['RMSE']:.4f}, CRPS={metrics['CRPS']:.4f}")
+            logger.info(f"  Fold {test_id}: RMSE={metrics['RMSE']:.4f}, CRPS={metrics['CRPS']:.4f}, val_RMSE={val_rmse:.4f}")
 
         # Save best model
         if best_model is not None:

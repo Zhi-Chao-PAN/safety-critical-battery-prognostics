@@ -38,10 +38,11 @@ def test_pinn_pipeline_integration(tmp_path):
     ckpt_dir = tmp_path / "checkpoints"
     log_dir = tmp_path / "logs"
 
-    # Initialize Pipeline
+    # Initialize Pipeline — use capacity as target (not RUL) because PINN's
+    # physics model Q(n)=Q0-a√n-b·n is designed for capacity fade. (Expert #6 fix)
     pipeline = TrainingPipeline(
         features=["cycle"],
-        target="rul",
+        target="capacity",
         group_col="battery_id",
         checkpoint_dir=str(ckpt_dir),
         log_dir=str(log_dir)

@@ -384,3 +384,29 @@
 - **拒绝的建议** (带理由):
     - #4 "default.yaml device:cpu/model:lstm 矛盾" → 不成立 (配置名 "baseline_comparison", PINN 有独立参数体系)
 - **测试结果**: 71/71 全部通过 (67 原有 + 4 新增)
+
+### Milestone 29: Expert #6 方法学审计修复 (2026-04-06)
+- **审计来源**: 外部专家 #6 — 方法学层面深度审查 (5/5 命中率, 迄今最精准)
+- **核心发现**: 两个影响 README 核心声称的方法学缺陷
+- **已修复的问题 (5 项)**:
+    - **J1 — 后处理公平性** (P0 方法学):
+      - ✅ `validate_real_data.py`: LSTM 预测后添加 EMA smoothing + running minimum
+      - ✅ `robustness_test.py`: LSTM 和 TCN 预测后添加相同后处理
+      - ✅ 确保 0% VR 比较在同等条件下进行
+    - **J2 — README 透明性** (P0 方法学):
+      - ✅ `validate_real_data.py` docstring: 标注 "same-cell noise robustness test, NOT cross-cell generalization"
+      - ✅ `robustness_test.py` docstring: 添加 "FAIR COMPARISON PROTOCOL" 文档
+      - ✅ `README.md` L14-16: 修正标题为 "(same-cell noise robustness test)", 更新脚注
+    - **J3 — SPMResidualConstraint 语义修正** (P1 科学):
+      - ✅ `constraints.py`: SPMResidualConstraint 优先使用 `inputs["nn_residuals"]`
+      - ✅ `pinn_model.py`: 标准训练路径传递 `nn_residuals` 到 constraint_inputs
+      - ✅ `mixed_precision.py`: MP 训练路径同步传递 `nn_residuals`
+      - **Bug 证据**: total_predictions (≈1.8 Ah²) vs nn_residuals (≈0.01 Ah²) → ~180x 量级错误
+    - **J4 — Pipeline val_df 启用** (P1 工程):
+      - ✅ `pipeline.py`: best_model 选择改用 val_df RMSE (而非 test_df RMSE)
+      - ✅ 消除 checkpoint 选择中的 test-set 信息泄漏
+    - **J5 — RUL 目标守卫** (P1 科学):
+      - ✅ `pinn_model.py`: 添加 heuristic 检测 RUL 语义到 capacity-fade 方程的不匹配
+      - ✅ `test_integration_pipeline.py`: 改为 `target="capacity"` (物理语义正确)
+- **新增测试**: 3 个 SPMResidualConstraint nn_residuals 修复测试
+- **测试结果**: 74/74 全部通过 (71 原有 + 3 新增)

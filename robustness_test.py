@@ -6,6 +6,12 @@
    demonstration and algorithm comparison. For real-world CALCE battery
    validation results, see: scripts/validate_real_data.py
 
+FAIR COMPARISON PROTOCOL:
+  All models (PINN, LSTM, TCN) receive identical post-processing
+  (EMA smoothing α=0.15 + running minimum projection) to ensure the
+  violation rate comparison isolates model quality rather than
+  post-processing advantages.
+
 功能：
 1. 注入50%强度高斯噪声模拟传感器故障/恶劣环境
 2. 对比PINN模型（开启物理约束）与纯数据驱动模型（LSTM/TCN）
@@ -377,6 +383,19 @@ class RobustnessTester:
         if pad_width > 0:
             predictions = np.pad(predictions, (pad_width, 0), 'edge')
         
+        # FAIR COMPARISON: Apply identical post-processing to LSTM
+        # Same EMA smoothing + running minimum as PINN (Expert #6 audit fix)
+        alpha = 0.15
+        smoothed = np.empty_like(predictions)
+        smoothed[0] = predictions[0]
+        for i in range(1, len(predictions)):
+            smoothed[i] = alpha * predictions[i] + (1 - alpha) * smoothed[i - 1]
+        projected = np.empty_like(smoothed)
+        projected[0] = smoothed[0]
+        for i in range(1, len(smoothed)):
+            projected[i] = min(projected[i - 1], smoothed[i])
+        predictions = projected
+        
         # 计算指标
         rmse = self.calculate_rmse(predictions, y_clean)
         violation_rate = self.calculate_physical_violation_rate(predictions, X_noisy[:, 0])
@@ -428,6 +447,19 @@ class RobustnessTester:
         pad_width = len(y_clean) - len(predictions)
         if pad_width > 0:
             predictions = np.pad(predictions, (pad_width, 0), 'edge')
+        
+        # FAIR COMPARISON: Apply identical post-processing to TCN
+        # Same EMA smoothing + running minimum as PINN (Expert #6 audit fix)
+        alpha = 0.15
+        smoothed = np.empty_like(predictions)
+        smoothed[0] = predictions[0]
+        for i in range(1, len(predictions)):
+            smoothed[i] = alpha * predictions[i] + (1 - alpha) * smoothed[i - 1]
+        projected = np.empty_like(smoothed)
+        projected[0] = smoothed[0]
+        for i in range(1, len(smoothed)):
+            projected[i] = min(projected[i - 1], smoothed[i])
+        predictions = projected
         
         # 计算指标
         rmse = self.calculate_rmse(predictions, y_clean)

@@ -541,3 +541,65 @@ class TestExpert5BugFixes:
             f"After sorting by cycle, sequence [2.0, 1.5, 1.0] is monotone decreasing. "
             f"Loss should be 0.0, got {loss.item()}"
         )
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Expert #6 Audit Bug-Fix Tests
+# ══════════════════════════════════════════════════════════════════════════════
+
+class TestExpert6SPMResidualFix:
+    """
+    Expert #6 identified that SPMResidualConstraint was receiving
+    total_predictions (≈1.8 Ah) instead of nn_residuals (≈0.01 Ah),
+    inflating the loss by ~180x. The fix makes the constraint check
+    inputs["nn_residuals"] first, falling back to predictions.
+    """
+
+    def test_spm_prefers_nn_residuals_from_inputs(self):
+        """SPMResidualConstraint should use inputs['nn_residuals'] when available."""
+        constraint = SPMResidualConstraint(weight=0.1)
+
+        # total_predictions ≈ 1.8 (capacity), nn_residuals ≈ 0.01
+        total_pred = torch.tensor([[1.8], [1.75], [1.7]])
+        nn_residuals = torch.tensor([[0.01], [-0.02], [0.005]])
+        inputs = {"nn_residuals": nn_residuals}
+
+        loss = constraint.compute_loss(total_pred, inputs)
+        expected = torch.mean(nn_residuals ** 2)
+
+        assert torch.allclose(loss, expected, atol=1e-6), (
+            f"SPM should compute loss from nn_residuals ({expected.item():.6f}), "
+            f"not total_predictions. Got {loss.item():.6f}"
+        )
+
+    def test_spm_falls_back_to_predictions(self):
+        """SPMResidualConstraint should use predictions if nn_residuals not in inputs."""
+        constraint = SPMResidualConstraint(weight=0.1)
+
+        predictions = torch.tensor([[0.05], [-0.03], [0.02]])
+        inputs = {}  # No nn_residuals key
+
+        loss = constraint.compute_loss(predictions, inputs)
+        expected = torch.mean(predictions ** 2)
+
+        assert torch.allclose(loss, expected, atol=1e-6), (
+            f"Without nn_residuals in inputs, SPM should use predictions. "
+            f"Expected {expected.item():.6f}, got {loss.item():.6f}"
+        )
+
+    def test_spm_nn_residuals_vs_total_predictions_magnitude(self):
+        """Verify the ~180x magnitude difference that Expert #6 identified."""
+        constraint = SPMResidualConstraint(weight=0.1)
+
+        # Simulate realistic values
+        total_pred = torch.tensor([[1.82], [1.79], [1.76]])
+        nn_residuals = torch.tensor([[0.012], [-0.008], [0.003]])
+
+        loss_total = constraint.compute_loss(total_pred, {})              # fallback: uses total
+        loss_residual = constraint.compute_loss(total_pred, {"nn_residuals": nn_residuals})
+
+        ratio = loss_total.item() / max(loss_residual.item(), 1e-10)
+        assert ratio > 100, (
+            f"Total-prediction loss should be >100x larger than residual loss. "
+            f"Ratio: {ratio:.1f}x (total={loss_total.item():.4f}, res={loss_residual.item():.6f})"
+        )

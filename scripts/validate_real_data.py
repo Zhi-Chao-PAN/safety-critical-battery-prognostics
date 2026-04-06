@@ -1,15 +1,21 @@
 #!/usr/bin/env python3
 """
-Phase 6: Real-World Data Robustness Validation
+Phase 6: Real-World Data Noise Robustness Validation
 
 Tests the PINN three-layer physics shield on REAL CALCE battery degradation
-data (not synthetic). This is the generalizability proof for IEEE submission.
+data (not synthetic). Validates that the physics defense maintains monotonic
+predictions under heavy sensor noise.
 
-Strategy:
-1. Load real CALCE CS2_33 data (longest cycle life, ~859 cycles)
-2. Train PINN on clean data, inject 50% Gaussian noise, compare with LSTM
-3. Also test on multiple CALCE cells (CS2_34, CS2_35, CS2_36, CS2_37, CS2_38)
-4. Generate cross-cell generalization figure + report
+EXPERIMENT DESIGN — SAME-CELL NOISE ROBUSTNESS TEST:
+  Each cell is trained on its OWN clean trajectory, then evaluated on a
+  noisy version of the SAME trajectory. This validates noise rejection
+  capability, NOT cross-cell generalization. For cross-cell evaluation,
+  use Leave-One-Cell-Out CV (future work).
+
+FAIR COMPARISON PROTOCOL:
+  Both PINN and LSTM receive identical post-processing (EMA smoothing +
+  running minimum projection) to ensure the violation rate comparison
+  isolates model quality rather than post-processing advantages.
 
 Output:
   robustness_results/real_data_validation.png
@@ -201,6 +207,11 @@ def run_cell_experiment(cell_path: Path, noise_level: float = 0.5) -> CellResult
     pad_width = len(y_clean) - len(lstm_pred)
     if pad_width > 0:
         lstm_pred = np.pad(lstm_pred, (pad_width, 0), 'edge')
+
+    # FAIR COMPARISON: Apply identical post-processing to LSTM
+    # Same EMA smoothing + running minimum as PINN (Expert #6 audit fix)
+    lstm_pred = apply_ema_smoothing(lstm_pred, alpha=0.15)
+    lstm_pred = apply_running_minimum(lstm_pred)
 
     lstm_rmse = float(np.sqrt(np.mean((lstm_pred - y_clean) ** 2)))
     lstm_viol, lstm_vr = compute_violations(lstm_pred)

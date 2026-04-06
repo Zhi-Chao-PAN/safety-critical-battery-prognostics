@@ -240,8 +240,10 @@ class SPMResidualConstraint(PhysicsConstraint):
         Compute SPM residual constraint loss.
         
         Args:
-            predictions: Neural network residual predictions [batch_size, 1]
-            inputs: Additional context (not used in basic residual constraint)
+            predictions: Total capacity predictions [batch_size, 1]
+                         (used as fallback if nn_residuals not in inputs)
+            inputs: Additional context. If "nn_residuals" key is present,
+                    it is used instead of predictions (preferred).
             
         Returns:
             loss: Residual magnitude loss (scalar)
@@ -250,9 +252,14 @@ class SPMResidualConstraint(PhysicsConstraint):
         if not self.validate(predictions, inputs):
             return self._nan_penalty_loss()
         
+        # Prefer actual NN residuals over total predictions (Expert #6 fix)
+        # When nn_residuals is passed, we penalize the residual magnitude correctly.
+        # Without this, passing total_predictions (≈1.8 Ah) inflates the loss ~180x
+        # vs the intended residual penalty (≈0.01 Ah).
+        residuals = inputs.get("nn_residuals", predictions)
+        
         # Simple L2 penalty on residuals
-        # predictions should be the NN residual (difference from physics baseline)
-        loss = torch.mean(predictions ** 2)
+        loss = torch.mean(residuals ** 2)
         
         return loss
 
