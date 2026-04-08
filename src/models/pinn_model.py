@@ -1,5 +1,5 @@
 """
-Physics-Informed Neural Network (PINN) for Battery RUL - Optimized Version.
+Physics-Informed Neural Network (PINN) for battery capacity forecasting.
 
 Architecture: Physics residual learning with Adaptive Loss Weighting and GPU-optimized batch processing.
   Total prediction = Physics(n) + NN(features)
@@ -161,6 +161,7 @@ class PINNModel(BatteryModel):
     """
 
     name = "pinn"
+    prediction_target = "capacity"
 
     def __init__(
         self,
@@ -241,7 +242,7 @@ class PINNModel(BatteryModel):
         
         Args:
             X (np.ndarray): Input features. X[:, 0] must be the cycle count.
-            y (np.ndarray): Target capacity or RUL values.
+            y (np.ndarray): Target capacity values.
             **kwargs: Additional training arguments (e.g., validation_data).
             
         Returns:
@@ -588,6 +589,7 @@ class PINNModel(BatteryModel):
         """Get model parameters for serialization."""
         return {
             "name": self.name,
+            "prediction_target": self.prediction_target,
             "input_dim": self.input_dim,
             "hidden_dim": self.hidden_dim,
             "dropout": self.dropout,

@@ -1,5 +1,5 @@
 """
-Zero-Shot Cross-Dataset Benchmark Runner for PINN Battery Models.
+Zero-Shot Cross-Dataset Benchmark Runner for Battery Prognostics Models.
 
 This script demonstrates the complete zero-shot evaluation pipeline:
 1. Load multiple datasets (NASA, CALCE, etc.)
@@ -31,13 +31,13 @@ logger = logging.getLogger(__name__)
 
 
 def create_pinn_model(input_dim: int = 8, **kwargs):
-    """Create PINN model for battery RUL prediction."""
+    """Create a capacity-space PINN model for zero-shot evaluation."""
     from src.models.pinn_model import PINNModel
 
     model = PINNModel(
         input_dim=input_dim,
-        hidden_dims=[128, 64, 32],
-        physics_weight=0.1,
+        hidden_dim=128,
+        lambda_physics=0.1,
         dropout=0.1,
         **kwargs
     )
@@ -50,7 +50,7 @@ def create_lstm_model(input_dim: int = 8, **kwargs):
 
     model = LSTMModel(
         input_dim=input_dim,
-        hidden_size=64,
+        hidden_dim=64,
         num_layers=2,
         dropout=0.1,
         **kwargs
@@ -64,7 +64,7 @@ def create_gru_model(input_dim: int = 8, **kwargs):
 
     model = GRUModel(
         input_dim=input_dim,
-        hidden_size=64,
+        hidden_dim=64,
         num_layers=2,
         dropout=0.1,
         **kwargs
@@ -128,6 +128,10 @@ def run_single_evaluation(
         raise ValueError(f"Unknown model: {model_name}. Available: {list(MODEL_REGISTRY.keys())}")
 
     model = MODEL_REGISTRY[model_name](input_dim=input_dim)
+    logger.info(
+        "Model prediction target: %s | evaluation target: rul",
+        getattr(model, "prediction_target", "rul"),
+    )
 
     # Run zero-shot evaluation
     result = benchmark.run_zero_shot(
@@ -136,7 +140,7 @@ def run_single_evaluation(
         train_dataset=train_dataset,
         test_dataset=test_dataset,
         features=features,
-        target="rul",
+        target="rul",  # Evaluation target only; capacity models still train on capacity.
         save_model=save_model,
     )
 
@@ -230,7 +234,7 @@ def run_full_matrix_evaluation(
 def main():
     """Main entry point."""
     parser = argparse.ArgumentParser(
-        description="Zero-Shot Cross-Dataset Benchmark for PINN Battery Models"
+        description="Zero-Shot Cross-Dataset Benchmark for Battery Prognostics Models"
     )
     parser.add_argument(
         "--model",

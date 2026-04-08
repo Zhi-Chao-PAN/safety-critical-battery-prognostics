@@ -196,40 +196,85 @@ Removing any single layer degrades either accuracy (no clamping: RMSE 2.589) or 
 
 ---
 
-## 9. Real-World Data Generalization
+## 9. Real-World Same-Cell Noise Robustness
 
 ### 9.1 Motivation
 
-The defense layer ablation (Section 8) uses synthetic data. To validate the physics shield's generalizability, we test on **6 real CALCE CS2-series lithium-ion batteries** spanning 774–1,076 cycles, each with distinct degradation profiles.
+The defense layer ablation (Section 8) uses synthetic data. To validate that the physics shield still rejects severe sensor corruption on real measurements, we test on **6 real CALCE CS2-series lithium-ion batteries** spanning 774–1,076 cycles, each with distinct degradation profiles.
 
 ### 9.2 Experimental Setup
 
 - **Dataset**: CALCE CS2_33, CS2_34, CS2_35, CS2_36, CS2_37, CS2_38
 - **Noise injection**: 50% Gaussian (σ = 0.5 × σ_capacity), same as synthetic experiments
+- **Protocol**: train on each cell's clean trajectory, evaluate on a noisy version of that same trajectory
 - **Defense**: Full three-layer physics shield (unchanged hyperparameters)
 - **No retuning**: Same α=0.15 EMA, same clamping, same constraint weights
 
-### 9.3 Cross-Cell Results
+### 9.3 Same-Cell Results
 
 | Cell | Cycles | PINN RMSE | PINN VR | LSTM RMSE | LSTM VR |
 |------|--------|-----------|---------|-----------|---------|
-| CS2_33 | 864 | 0.2872 | **0.00%** | 0.2763 | 47.97% |
-| CS2_34 | 774 | 0.2031 | **0.00%** | 0.1411 | 49.29% |
-| CS2_35 | 932 | 0.2051 | **0.00%** | 0.2021 | 48.87% |
-| CS2_36 | 970 | 0.2744 | **0.00%** | 0.2488 | 48.30% |
-| CS2_37 | 1,037 | 0.2543 | **0.00%** | 0.2189 | 49.52% |
-| CS2_38 | 1,076 | 0.2142 | **0.00%** | 0.2069 | 49.95% |
-| **Average** | — | **0.2397** | **0.00%** | **0.2157** | **48.98%** |
+| CS2_33 | 864 | 0.2893 | **0.00%** | 0.2771 | **0.00%** |
+| CS2_34 | 774 | 0.1567 | **0.00%** | 0.1417 | **0.00%** |
+| CS2_35 | 932 | 0.2085 | **0.00%** | 0.2000 | **0.00%** |
+| CS2_36 | 970 | 1.1494 | **0.00%** | 0.2491 | **0.00%** |
+| CS2_37 | 1,037 | 0.2847 | **0.00%** | 0.2216 | **0.00%** |
+| CS2_38 | 1,076 | 0.2205 | **0.00%** | 0.2063 | **0.00%** |
+| **Average** | — | **0.3848** | **0.00%** | **0.2160** | **0.00%** |
 
 ### 9.4 Key Findings
 
-1. **Perfect generalization**: PINN achieves 0.00% violation rate on **all 6 real cells** without any hyperparameter retuning. The physics shield is not an artifact of synthetic data.
+1. **Fairness-matched same-cell safety is tied**: with identical EMA smoothing + running-minimum projection, both PINN and LSTM reach 0.00% violation rate on all 6 real cells.
 
-2. **LSTM universally fails**: LSTM violation rate averages 48.98% across all cells — nearly half of all consecutive predictions show non-physical capacity rebound.
+2. **Accuracy does not favor PINN**: the seeded rerun yields PINN average RMSE 0.3848 vs LSTM 0.2160, driven largely by the CS2_36 outlier fold (PINN 1.1494 vs LSTM 0.2491).
 
-3. **RMSE trade-off is modest**: PINN's average RMSE (0.240) is only 11% higher than LSTM (0.216). This confirms the ROI of the physics shield: a small accuracy penalty buys complete physical consistency.
+3. **This is still useful evidence, but bounded**: Section 9 shows that the real-data evaluation stack can remain monotone under severe same-cell corruption; it no longer supports a model-specific real-data safety advantage claim for PINN.
 
-4. **Scale robustness**: The defense works equally well on short-cycle batteries (CS2_34: 774 cycles) and long-cycle batteries (CS2_38: 1,076 cycles).
+4. **No retuning remains true**: the same fairness-matched post-processing chain and unchanged hyperparameters were carried over from the synthetic protocol.
+
+### 9.5 Protocol Boundary
+
+- Section 9 reports **same-cell noise robustness only**. It does not support cross-cell generalization claims.
+- A dedicated leave-one-cell-out protocol is now implemented in `scripts/validate_real_data_logo.py` for true held-out-cell evaluation.
+- Cross-cell results from that LOGO protocol are reported separately in Section 9.6 below.
+
+### 9.6 LOGO Cross-Cell Results
+
+This section reports the executed outputs from `robustness_results/real_data_logo_validation_report.md`. Each fold trains on five clean CALCE cells and evaluates on the sixth held-out cell under both clean and noisy conditions.
+
+| Condition | PINN Avg RMSE | PINN Avg VR | LSTM Avg RMSE | LSTM Avg VR |
+|-----------|---------------|-------------|---------------|-------------|
+| Clean held-out cell | 0.2497 | 0.00% | 0.2223 | 0.00% |
+| 50% noisy held-out cell | 0.2615 | 0.00% | 0.2232 | 0.00% |
+
+Key interpretation:
+
+1. **The LOGO protocol is now empirically reported**: this repository no longer treats held-out-cell validation as a pending placeholder.
+2. **Safety is tied under the shared post-processing stack**: both PINN and LSTM achieve 0.00% violation rate on the reported clean and noisy held-out trajectories.
+3. **Accuracy still does not favor PINN in LOGO**: PINN has higher average RMSE than LSTM in both conditions, with CS2_33 now the clearest weak fold (PINN 0.4263 vs LSTM 0.2796 on noisy evaluation).
+4. **Bounded claim only**: these results support a measured statement about the current held-out-cell protocol and fairness-matched safety behavior; they do **not** establish cross-cell accuracy superiority for PINN.
+
+### 9.7 Multi-Seed Corruption Stress Suite
+
+This repository now also reports `robustness_results/real_data_stress_suite_report.md`, which holds the training seed fixed at 42 and sweeps 5 corruption seeds across four corruption families.
+
+| Protocol | Corruption | PINN RMSE (mean ± std) | PINN VR (mean ± std) | LSTM RMSE (mean ± std) | LSTM VR (mean ± std) |
+|----------|------------|------------------------|----------------------|------------------------|----------------------|
+| Same-cell | Gaussian noise | 0.4012 ± 0.0081 | 0.00% ± 0.00% | 0.2160 ± 0.0002 | 0.00% ± 0.00% |
+| Same-cell | Bias drift | 0.3979 ± 0.0028 | 0.00% ± 0.00% | 0.2158 ± 0.0003 | 0.00% ± 0.00% |
+| Same-cell | Impulse spikes | 0.3941 ± 0.0036 | 0.00% ± 0.00% | 0.2158 ± 0.0002 | 0.00% ± 0.00% |
+| Same-cell | Missing segments | 0.3980 ± 0.0050 | 0.00% ± 0.00% | 0.2158 ± 0.0003 | 0.00% ± 0.00% |
+| LOGO | Gaussian noise | 0.2537 ± 0.0038 | 0.00% ± 0.00% | 0.2225 ± 0.0003 | 0.00% ± 0.00% |
+| LOGO | Bias drift | 0.2572 ± 0.0075 | 0.00% ± 0.00% | 0.2224 ± 0.0002 | 0.00% ± 0.00% |
+| LOGO | Impulse spikes | 0.2499 ± 0.0045 | 0.00% ± 0.00% | 0.2225 ± 0.0001 | 0.00% ± 0.00% |
+| LOGO | Missing segments | 0.2520 ± 0.0043 | 0.00% ± 0.00% | 0.2226 ± 0.0002 | 0.00% ± 0.00% |
+
+Key interpretation:
+
+1. **The phase-2 real-data stress suite is now executed, not hypothetical**.
+2. **Across these corruption seeds and families, safety remains tied**: both PINN and LSTM stay at 0.00% VR under the shared post-processing stack.
+3. **The main instability is accuracy, not monotonicity**: same-cell PINN error concentrates on CS2_36, while LOGO PINN error concentrates on CS2_33.
+4. **This is still bounded evidence**: the suite varies corruption seeds and corruption families under a fixed training seed; it should not be over-read as exhaustive real-world robustness.
 
 ---
 
@@ -320,7 +365,9 @@ The proposed micro-macro time-scale decoupled architecture demonstrates:
 - ✅ Reliable uncertainty estimation with conformal prediction
 - ✅ Robust safety guarantees via three-layer physics defense (0.00% violation rate under up to 50% noise across multiple seeds)
 - ✅ Quantified defense layer contributions via ablation study
-- ✅ Perfect generalization to 6 real CALCE battery cells (0.00% VR on all)
-- ✅ Absolute superiority in physical consistency compared to 5 state-of-the-art data-driven baselines (LSTM, GRU, Transformer, TCN, CNN1D)
+- ✅ Fairness-matched same-cell real-data reports on 6 CALCE cells (0.00% VR for both PINN and LSTM under the shared post-processing stack; PINN does not lead on RMSE)
+- ✅ Executed LOGO cross-cell results are now reported separately with bounded interpretation (0.00% VR for both PINN and LSTM under the shared post-processing stack; PINN does not lead LSTM on RMSE)
+- ✅ A seeded multi-corruption real-data stress suite now extends same-cell and LOGO reporting across four corruption families
+- ✅ Absolute superiority in physical consistency compared to 5 state-of-the-art data-driven baselines (LSTM, GRU, Transformer, TCN, CNN1D) in the synthetic benchmark
 
 These results validate the effectiveness of incorporating physics-informed constraints in a decoupled architecture for safety-critical battery prognostics. The three-layer defense provides engineering-grade reliability for real-world BMS deployment.

@@ -4,13 +4,18 @@
 **Micro-Macro Time-Scale Decoupling for Battery RUL Prediction**
 
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-red.svg?logo=pytorch)](https://pytorch.org/)
+[![CI](https://github.com/Zhi-Chao-PAN/safety-critical-battery-prognostics/actions/workflows/ci.yml/badge.svg)](https://github.com/Zhi-Chao-PAN/safety-critical-battery-prognostics/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Python](https://img.shields.io/badge/Python-3.10+-blue.svg?logo=python)]()
-[![GitHub stars](https://img.shields.io/github/stars/Zhi-Chao-PAN/safety-critical-battery-prognostics?style=social)]()
+[![Python](https://img.shields.io/badge/Python-3.10+-blue.svg?logo=python)](https://python.org/)
+[![GitHub stars](https://img.shields.io/github/stars/Zhi-Chao-PAN/safety-critical-battery-prognostics?style=social)](https://github.com/Zhi-Chao-PAN/safety-critical-battery-prognostics)
 
 *面向学术研究与工业BMS边缘部署的电池寿命预测系统*
 
 </div>
+
+---
+
+> 说明：当前仓库中关于实验口径、证据边界与对外结论的最新版本，以英文 [README.md](README.md)、[docs/comprehensive_experimental_results.md](docs/comprehensive_experimental_results.md) 与 [docs/claim_evidence_matrix.md](docs/claim_evidence_matrix.md) 为准。本文档保留为中文快速导读。
 
 ---
 

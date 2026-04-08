@@ -19,6 +19,7 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+import torch
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -33,6 +34,45 @@ skip_no_chronos = pytest.mark.skipif(
     not CHRONOS_AVAILABLE,
     reason="chronos-forecasting not installed"
 )
+
+
+class _FakeChronosPipeline:
+    """Deterministic local stand-in for ChronosPipeline used in unit tests."""
+
+    def predict(
+        self,
+        context_tensor,
+        prediction_length: int,
+        num_samples: int,
+        temperature: float,
+        top_k: int,
+        top_p: float,
+    ):
+        last_value = float(context_tensor[-1].item()) if context_tensor.numel() else 1.0
+        slope = -0.01 * max(temperature, 0.1)
+        base_forecast = last_value + slope * torch.arange(
+            prediction_length, dtype=torch.float64
+        )
+        sample_offsets = torch.linspace(-0.02, 0.02, num_samples, dtype=torch.float64)
+        forecast = base_forecast.unsqueeze(0) + sample_offsets.unsqueeze(1)
+        return forecast.unsqueeze(0)
+
+
+@pytest.fixture(autouse=CHRONOS_AVAILABLE)
+def fake_chronos_pipeline(monkeypatch):
+    """Replace live Chronos loading with a deterministic in-memory stub."""
+    if not CHRONOS_AVAILABLE:
+        yield
+        return
+
+    from src.models.chronos_model import ChronosZeroShotModel
+
+    def _ensure_pipeline(self):
+        if self._pipeline is None:
+            self._pipeline = _FakeChronosPipeline()
+
+    monkeypatch.setattr(ChronosZeroShotModel, "_ensure_pipeline", _ensure_pipeline)
+    yield
 
 
 @skip_no_chronos
@@ -198,7 +238,7 @@ class TestChronosFitIsNoop:
 class TestChronosSaveLoad:
     """Test config serialization roundtrip."""
 
-    def test_save_load_roundtrip(self, tmp_path):
+    def test_save_load_roundtrip(self, workspace_tmp_path):
         from src.models.chronos_model import ChronosZeroShotModel
         original = ChronosZeroShotModel(
             model_id="amazon/chronos-t5-small",
@@ -213,7 +253,7 @@ class TestChronosSaveLoad:
             top_p=0.95,
         )
 
-        save_path = tmp_path / "chronos_config.json"
+        save_path = workspace_tmp_path / "chronos_config.json"
         original.save(save_path)
 
         # Verify file exists and is valid JSON

@@ -20,7 +20,31 @@ from typing import Dict, Any, Optional, Tuple, Callable
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.cuda.amp import autocast, GradScaler
+
+try:
+    from torch.amp import autocast as torch_autocast
+    from torch.amp import GradScaler as TorchGradScaler
+except ImportError:  # pragma: no cover - compatibility fallback
+    from torch.cuda.amp import autocast as torch_autocast
+    from torch.cuda.amp import GradScaler as TorchGradScaler
+
+
+def _autocast(enabled: bool):
+    """Compatibility wrapper for torch.amp/autocast across PyTorch versions."""
+    device_type = "cuda" if torch.cuda.is_available() else "cpu"
+    try:
+        return torch_autocast(device_type=device_type, enabled=enabled)
+    except TypeError:  # pragma: no cover - older torch.cuda.amp signature
+        return torch_autocast(enabled=enabled)
+
+
+def _create_grad_scaler(enabled: bool, **kwargs):
+    """Compatibility wrapper for torch.amp GradScaler across PyTorch versions."""
+    device_type = "cuda" if torch.cuda.is_available() else "cpu"
+    try:
+        return TorchGradScaler(device_type, enabled=enabled, **kwargs)
+    except TypeError:  # pragma: no cover - older torch.cuda.amp signature
+        return TorchGradScaler(enabled=enabled, **kwargs)
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +90,7 @@ class MixedPrecisionTrainer:
         self.device = next(model.parameters()).device
         
         # Gradient scaler for mixed precision
-        self.scaler = GradScaler(
+        self.scaler = _create_grad_scaler(
             init_scale=init_scale,
             growth_factor=growth_factor,
             backoff_factor=backoff_factor,
@@ -109,7 +133,7 @@ class MixedPrecisionTrainer:
         self.optimizer.zero_grad()
         
         # Forward pass with mixed precision
-        with autocast(enabled=self.enabled):
+        with _autocast(enabled=self.enabled):
             # Model forward pass
             predictions = self.model(data)
             
@@ -252,7 +276,7 @@ class MixedPrecisionLoss:
         """
         model.eval()
         
-        with torch.no_grad(), autocast(enabled=self.enabled):
+        with torch.no_grad(), _autocast(enabled=self.enabled):
             # Model forward pass
             predictions = model(data)
             
@@ -293,7 +317,7 @@ def create_mixed_precision_loss_fn(loss_fn: Callable, enabled: bool = True) -> C
         Wrapped loss function that uses mixed precision
     """
     def wrapped_loss_fn(*args, **kwargs):
-        with autocast(enabled=enabled):
+        with _autocast(enabled=enabled):
             return loss_fn(*args, **kwargs)
     
     return wrapped_loss_fn
@@ -306,9 +330,9 @@ class MixedPrecisionMSELoss:
     def __init__(self, reduction: str = 'mean', enabled: bool = True):
         self.reduction = reduction
         self.enabled = enabled
-    
+
     def __call__(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-        with autocast(enabled=self.enabled):
+        with _autocast(enabled=self.enabled):
             return F.mse_loss(input, target, reduction=self.reduction)
 
 
@@ -318,9 +342,9 @@ class MixedPrecisionMAELoss:
     def __init__(self, reduction: str = 'mean', enabled: bool = True):
         self.reduction = reduction
         self.enabled = enabled
-    
+
     def __call__(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-        with autocast(enabled=self.enabled):
+        with _autocast(enabled=self.enabled):
             return F.l1_loss(input, target, reduction=self.reduction)
 
 

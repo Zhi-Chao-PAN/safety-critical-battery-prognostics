@@ -1,15 +1,21 @@
 cff-version: 1.2.0
 message: "If you use this software in your research, please cite it as below."
+type: software
 authors:
 - family-names: "Pan"
   given-names: "Zhi-Chao"
-title: "Micro-Macro Time-Scale Decoupling for Battery RUL Prediction"
+title: "Physics-Shielded Battery Prognostics: Micro-Macro Time-Scale Decoupled PINN with Three-Layer Defense"
 version: 2.0.0
-date-released: 2026-03-26
+date-released: 2026-04-08
 url: "https://github.com/Zhi-Chao-PAN/safety-critical-battery-prognostics"
+repository-code: "https://github.com/Zhi-Chao-PAN/safety-critical-battery-prognostics"
+license: "MIT"
+abstract: "A safety-critical battery prognostics repository centered on a three-layer physics defense, bounded real-data reporting, and reproducible benchmark scripts for synthetic, same-cell, and LOGO evaluation protocols."
 keywords:
+  - "battery-prognostics"
   - "prognostics-health-management"
   - "lithium-ion-batteries"
   - "uncertainty-quantification"
   - "physics-informed-neural-networks"
   - "battery-management-systems"
+  - "safety-critical-ml"

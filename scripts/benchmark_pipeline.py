@@ -1,5 +1,5 @@
 """
-Zero-Shot Cross-Dataset Benchmark Pipeline for PINN Battery Prognostics.
+Zero-Shot Cross-Dataset Benchmark Pipeline for Battery Prognostics.
 
 This module implements a unified benchmark runner for evaluating zero-shot
 generalization across multiple battery datasets (NASA, CALCE, Oxford, etc.).
@@ -31,6 +31,11 @@ from scipy import stats
 
 # Import project-specific modules
 from src.data.unified_loader import UnifiedDataLoader
+from src.evaluation.target_adapter import (
+    adapt_predictions_to_target,
+    build_prediction_data,
+    build_training_data,
+)
 from src.models.base import BatteryModel
 from src.uncertainty.scoring import compute_all_metrics
 
@@ -107,7 +112,7 @@ class ZeroShotResult:
             "rmse": self.rmse,
             "mae": self.mae,
             "crps": self.crps,
-            "picp": self.pifp,
+            "picp": self.picp,
             "mpiw": self.mpiw,
             "n_samples": self.n_samples,
             "train_time": self.train_time,
@@ -245,12 +250,15 @@ class BenchmarkRunner:
             name = model_name or model.name or "unknown"
             
             # Train on source dataset
-            X_train = train_df[self.config.features].values
-            y_train = train_df[self.config.target].values
-            
+            train_df, X_train, y_train, fit_kwargs = build_training_data(
+                train_df,
+                self.config.features,
+                model,
+            )
+
             t0 = time.time()
             try:
-                model.fit(X_train, y_train)
+                model.fit(X_train, y_train, **fit_kwargs)
                 train_time = time.time() - t0
                 logger.info(f"  Training completed in {train_time:.2f}s")
             except Exception as e:
@@ -291,19 +299,25 @@ class BenchmarkRunner:
         # Load test data
         test_df = self.registry.get_dataset(test_dataset)
         
-        X_test = test_df[self.config.features].values
-        y_test = test_df[self.config.target].values
-        
+        test_df, X_test, predict_kwargs = build_prediction_data(test_df, self.config.features)
+
         # Run inference
         t0 = time.time()
-        mean, lower, upper = model.predict(X_test)
+        mean, lower, upper = model.predict(X_test, **predict_kwargs)
         infer_time = time.time() - t0
-        
-        # Handle sequence model outputs (may be shorter than input)
-        y_eval = y_test[-len(mean):] if len(mean) < len(y_test) else y_test
-        
+
+        # Adapt to the configured evaluation target
+        y_eval, mean_eval, lower_eval, upper_eval, _ = adapt_predictions_to_target(
+            model=model,
+            test_df=test_df,
+            mean=mean,
+            lower=lower,
+            upper=upper,
+            evaluation_target=self.config.target,
+        )
+
         # Compute metrics
-        metrics = compute_all_metrics(y_eval, mean, lower, upper)
+        metrics = compute_all_metrics(y_eval, mean_eval, lower_eval, upper_eval)
         
         return ZeroShotResult(
             train_dataset=train_dataset,
@@ -590,7 +604,7 @@ def create_example_usage():
 Example: Zero-Shot Cross-Dataset Benchmark Usage
 
 This example demonstrates how to use the benchmark pipeline
-to evaluate zero-shot generalization of PINN models.
+to evaluate zero-shot generalization of battery prognostics models.
 """
 
 from benchmark_pipeline import (
@@ -615,9 +629,9 @@ runner = BenchmarkRunner(config)
 def create_pinn_model():
     return PINNModel(
         input_dim=6,
-        hidden_dims=[128, 64, 32],
+        hidden_dim=128,
         dropout=0.1,
-        physics_weight=0.1
+        lambda_physics=0.1
     )
 
 # Run zero-shot evaluation
@@ -639,7 +653,7 @@ print(results.groupby(['train_dataset', 'test_dataset'])[
 # Main execution
 if __name__ == "__main__":
     print("=" * 70)
-    print("Zero-Shot Cross-Dataset Benchmark Pipeline for PINN Battery Prognostics")
+    print("Zero-Shot Cross-Dataset Benchmark Pipeline for Battery Prognostics")
     print("=" * 70)
     print()
     print("This module provides:")

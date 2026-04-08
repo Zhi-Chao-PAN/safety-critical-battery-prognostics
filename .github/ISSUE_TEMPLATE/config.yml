@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation and Reproducibility Guide
+    url: https://github.com/Zhi-Chao-PAN/safety-critical-battery-prognostics/blob/main/README.md
+    about: Start here for repository scope, experiment scripts, and reproducibility commands.
+  - name: Claim-Evidence Matrix
+    url: https://github.com/Zhi-Chao-PAN/safety-critical-battery-prognostics/blob/main/docs/claim_evidence_matrix.md
+    about: Check current evidence boundaries before opening issues about benchmark claims.

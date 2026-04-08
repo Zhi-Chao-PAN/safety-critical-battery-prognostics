@@ -1,5 +1,10 @@
 # 零样本跨数据集评测流水线 (Zero-Shot Cross-Dataset Benchmark)
 
+> [!WARNING]
+> Historical archive. This page is preserved for provenance and may include
+> deprecated `target="rul"` PINN examples or older wording about model
+> semantics. Use the active repository docs for current behavior.
+
 ## 🎯 项目概述
 
 本项目实现了一个业界标杆级别的**零样本泛化评测流水线**，用于评估电池 RUL (Remaining Useful Life) 预测模型的跨数据集泛化能力。

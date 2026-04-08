@@ -1,5 +1,10 @@
 # 零样本跨数据集评测流水线
 
+> [!WARNING]
+> Historical archive. Some examples in this document predate the repository's
+> current capacity-first PINN semantics and may still show deprecated
+> `target="rul"` usage. Prefer the active zero-shot runner and README.
+
 ## 简介
 
 本项目实现了一个业界标杆级别的**零样本泛化评测流水线**，用于评估电池 RUL (Remaining Useful Life) 预测模型的跨数据集泛化能力。

@@ -26,6 +26,50 @@ import numpy as np
 logger = logging.getLogger(__name__)
 
 
+def find_eol_crossing_cycle(
+    capacity_trajectory: np.ndarray,
+    cycles: np.ndarray,
+    eol_threshold: float,
+) -> tuple[float, bool]:
+    """
+    Find the fractional cycle number where a capacity trajectory crosses EOL.
+
+    Args:
+        capacity_trajectory: 1D capacity predictions aligned to `cycles`.
+        cycles: 1D cycle numbers matching the trajectory.
+        eol_threshold: End-of-life threshold in Ah.
+
+    Returns:
+        (crossing_cycle, did_cross)
+    """
+    if len(capacity_trajectory) == 0 or len(cycles) == 0:
+        return 0.0, False
+
+    if len(capacity_trajectory) != len(cycles):
+        raise ValueError("capacity_trajectory and cycles must have the same length")
+
+    below_mask = capacity_trajectory < eol_threshold
+    if not np.any(below_mask):
+        return float(cycles[-1]), False
+
+    first_below_idx = int(np.argmax(below_mask))
+    if first_below_idx == 0:
+        return float(cycles[0]), True
+
+    c_before = float(capacity_trajectory[first_below_idx - 1])
+    c_after = float(capacity_trajectory[first_below_idx])
+    cycle_before = float(cycles[first_below_idx - 1])
+    cycle_after = float(cycles[first_below_idx])
+
+    denom = c_before - c_after
+    if abs(denom) < 1e-10:
+        return float(cycle_after), True
+
+    frac = (c_before - eol_threshold) / denom
+    crossing_cycle = cycle_before + frac * (cycle_after - cycle_before)
+    return float(crossing_cycle), True
+
+
 @dataclass
 class RULPrediction:
     """Container for a single battery's RUL prediction from capacity trajectory."""
@@ -115,6 +159,44 @@ def capacity_trajectory_to_rul(
     predicted_eol_cycle = current_cycle + predicted_rul
 
     return predicted_rul, predicted_eol_cycle, crossed
+
+
+def capacity_trajectory_to_rul_series(
+    predicted_capacity: np.ndarray,
+    cycles: np.ndarray,
+    eol_threshold: float,
+) -> np.ndarray:
+    """
+    Convert a full predicted capacity trajectory into per-cycle RUL values.
+
+    For each cycle i, the returned value estimates how many additional cycles
+    remain until the predicted trajectory first crosses the EOL threshold.
+    If the trajectory never crosses within the observed horizon, the final
+    observed cycle is used as a right-censored lower bound.
+    """
+    predicted_capacity = np.asarray(predicted_capacity, dtype=np.float64)
+    cycles = np.asarray(cycles, dtype=np.float64)
+
+    if predicted_capacity.ndim != 1 or cycles.ndim != 1:
+        raise ValueError("predicted_capacity and cycles must be 1D arrays")
+    if len(predicted_capacity) != len(cycles):
+        raise ValueError("predicted_capacity and cycles must have the same length")
+    if len(predicted_capacity) == 0:
+        return np.array([], dtype=np.float64)
+
+    rul_values = np.zeros(len(predicted_capacity), dtype=np.float64)
+    for i in range(len(predicted_capacity)):
+        crossing_cycle, crossed = find_eol_crossing_cycle(
+            predicted_capacity[i:],
+            cycles[i:],
+            eol_threshold,
+        )
+        if crossed:
+            rul_values[i] = max(0.0, crossing_cycle - cycles[i])
+        else:
+            rul_values[i] = max(0.0, cycles[-1] - cycles[i])
+
+    return rul_values
 
 
 def evaluate_chronos_rul(

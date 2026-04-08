@@ -70,7 +70,7 @@ def example_1_basic_zero_shot():
 
     model = LSTMModel(
         input_dim=len(features),
-        hidden_size=64,
+        hidden_dim=64,
         num_layers=2,
         dropout=0.1,
     )
@@ -149,6 +149,7 @@ def example_3_custom_model_integration():
         """用户自定义 PINN 模型示例"""
 
         name = "MyCustomPINN"
+        prediction_target = "capacity"
 
         def __init__(self, input_dim: int):
             self.input_dim = input_dim

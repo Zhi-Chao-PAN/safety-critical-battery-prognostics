@@ -16,6 +16,11 @@ import numpy as np
 import pandas as pd
 
 from src.data.splitter import DataSplitter
+from src.evaluation.target_adapter import (
+    adapt_predictions_to_target,
+    build_prediction_data,
+    build_training_data,
+)
 from src.models.base import BatteryModel
 from src.uncertainty.scoring import compute_all_metrics
 
@@ -36,11 +41,13 @@ class BenchmarkRunner:
         group_col: str = "battery_id",
         n_seeds: int = 10,
         results_dir: str = "results",
+        eol_threshold: float = 1.4,
     ):
         self.features = features
         self.target = target
         self.group_col = group_col
         self.n_seeds = n_seeds
+        self.eol_threshold = eol_threshold
         self.results_dir = Path(results_dir)
         self.results_dir.mkdir(parents=True, exist_ok=True)
 
@@ -74,27 +81,42 @@ class BenchmarkRunner:
                     import copy
                     model = copy.deepcopy(model_template)
 
-                    X_train = train_df[self.features].values
-                    y_train = train_df[self.target].values
-                    X_test = test_df[self.features].values
-                    y_test = test_df[self.target].values
+                    train_ordered, X_train, y_train, fit_kwargs = build_training_data(
+                        train_df,
+                        self.features,
+                        model,
+                        group_col=self.group_col,
+                    )
+                    test_ordered, X_test, predict_kwargs = build_prediction_data(
+                        test_df,
+                        self.features,
+                        group_col=self.group_col,
+                    )
 
                     t0 = time.time()
                     try:
-                        model.fit(X_train, y_train)
+                        model.fit(X_train, y_train, **fit_kwargs)
                         train_time = time.time() - t0
 
                         t1 = time.time()
-                        mean, lower, upper = model.predict(X_test)
+                        mean, lower, upper = model.predict(X_test, **predict_kwargs)
                         infer_time = time.time() - t1
 
                         if len(mean) == 0:
                             continue
 
-                        # Align y_test to prediction length (sequence models drop first N)
-                        y_eval = y_test[-len(mean):]
+                        y_eval, mean_eval, lower_eval, upper_eval, _ = adapt_predictions_to_target(
+                            model=model,
+                            test_df=test_ordered,
+                            mean=mean,
+                            lower=lower,
+                            upper=upper,
+                            evaluation_target=self.target,
+                            group_col=self.group_col,
+                            eol_threshold=self.eol_threshold,
+                        )
 
-                        metrics = compute_all_metrics(y_eval, mean, lower, upper)
+                        metrics = compute_all_metrics(y_eval, mean_eval, lower_eval, upper_eval)
                         metrics.update({
                             "model": model_name,
                             "fold": test_id,

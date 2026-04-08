@@ -52,7 +52,8 @@ class GRUModel(BatteryModel):
         self.model: GRUNet | None = None
 
     def fit(self, X: np.ndarray, y: np.ndarray, **kwargs: Any) -> "GRUModel":
-        X_seq, y_seq = self._make_seq(X, y)
+        group_ids = kwargs.get("group_ids")
+        X_seq, y_seq = self._make_seq(X, y, group_ids=group_ids)
         if len(X_seq) == 0:
             raise ValueError("No sequences created.")
         X_t = torch.tensor(X_seq, dtype=torch.float32).to(self.device)
@@ -83,7 +84,8 @@ class GRUModel(BatteryModel):
     def predict(self, X: np.ndarray, **kwargs: Any) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         if self.model is None:
             raise RuntimeError("Not fitted.")
-        X_seq, _ = self._make_seq(X, np.zeros(len(X)))
+        group_ids = kwargs.get("group_ids")
+        X_seq, _ = self._make_seq(X, np.zeros(len(X)), group_ids=group_ids)
         if len(X_seq) == 0:
             e = np.array([])
             return e, e, e
@@ -98,13 +100,29 @@ class GRUModel(BatteryModel):
         m, s = preds.mean(0), preds.std(0)
         return m, m - 1.96 * s, m + 1.96 * s
 
-    def _make_seq(self, X, y):
+    def _make_seq(self, X, y, group_ids=None):
         if len(X) <= self.seq_length:
             return np.array([]), np.array([])
+
+        if group_ids is None:
+            group_ids = np.zeros(len(X), dtype=np.int64)
+
+        group_ids = np.asarray(group_ids)
+        if len(group_ids) != len(X):
+            raise ValueError("group_ids must have the same length as X")
+
         Xl, yl = [], []
-        for i in range(len(X) - self.seq_length):
-            Xl.append(X[i:i + self.seq_length])
-            yl.append(y[i + self.seq_length])
+        for group_id in np.unique(group_ids):
+            mask = group_ids == group_id
+            X_group = X[mask]
+            y_group = y[mask]
+
+            if len(X_group) <= self.seq_length:
+                continue
+
+            for i in range(len(X_group) - self.seq_length):
+                Xl.append(X_group[i:i + self.seq_length])
+                yl.append(y_group[i + self.seq_length])
         return np.array(Xl, dtype=np.float32), np.array(yl, dtype=np.float32)
 
     def save(self, path: str | Path) -> None:
@@ -119,6 +137,7 @@ class GRUModel(BatteryModel):
         return self
 
     def get_params(self) -> dict[str, Any]:
-        return {"name": self.name, "input_dim": self.input_dim, "hidden_dim": self.hidden_dim,
+        return {"name": self.name, "prediction_target": self.prediction_target,
+                "input_dim": self.input_dim, "hidden_dim": self.hidden_dim,
                 "num_layers": self.num_layers, "dropout": self.dropout, "seq_length": self.seq_length,
                 "lr": self.lr, "epochs": self.epochs, "mc_samples": self.mc_samples}

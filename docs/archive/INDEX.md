@@ -1,5 +1,11 @@
 # 项目文件索引
 
+> [!WARNING]
+> Historical archive. These documents preserve past delivery artifacts and may
+> contain deprecated `target="rul"` examples for PINN or superseded wording.
+> Follow the active repository README and `docs/claim_evidence_matrix.md` for
+> current protocol boundaries and model semantics.
+
 ## 项目概述
 
 **项目名称**: 零样本跨数据集评测流水线 (Zero-Shot Cross-Dataset Benchmark)

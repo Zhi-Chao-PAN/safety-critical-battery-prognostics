@@ -47,6 +47,7 @@ class ChronosPINNHybridModel(BatteryModel):
     (Paris' Law / Empirical Degradation ODEs) to squash thermodynamic anomalies.
     """
     name: str = "chronos_pinn_hybrid"
+    prediction_target: str = "capacity"
 
     def __init__(
         self,

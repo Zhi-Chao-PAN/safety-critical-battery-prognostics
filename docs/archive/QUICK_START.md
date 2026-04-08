@@ -1,5 +1,10 @@
 # 零样本跨数据集评测流水线 - 快速开始指南
 
+> [!WARNING]
+> Historical archive. Commands and examples here may reflect older benchmark
+> assumptions, including deprecated PINN target semantics. Check the active
+> README before reusing them.
+
 ## 🚀 5分钟快速开始
 
 ### 步骤 1: 验证安装

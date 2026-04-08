@@ -1,5 +1,5 @@
 """
-Zero-Shot Cross-Dataset Benchmark for Battery RUL Prediction.
+Zero-Shot Cross-Dataset Benchmark for Battery Prognostics.
 
 Implements cross-dataset zero-shot generalization evaluation:
 - Train on Dataset A, test on Dataset B (unseen distribution)
@@ -23,6 +23,11 @@ import seaborn as sns
 from scipy import stats
 
 from src.data.unified_loader import UnifiedDataLoader
+from src.evaluation.target_adapter import (
+    adapt_predictions_to_target,
+    build_prediction_data,
+    build_training_data,
+)
 from src.models.base import BatteryModel
 from src.uncertainty.scoring import compute_all_metrics
 from src.utils.metrics import calculate_picp
@@ -98,6 +103,7 @@ class ZeroShotBenchmarkRunner:
         results_dir: str = "results/zero_shot_benchmark",
         device: str = "auto",
         random_seed: int = 42,
+        eol_threshold: float = 1.4,
     ):
         """
         Initialize benchmark runner.
@@ -111,6 +117,7 @@ class ZeroShotBenchmarkRunner:
         self.results_dir.mkdir(parents=True, exist_ok=True)
         self.device = device
         self.random_seed = random_seed
+        self.eol_threshold = eol_threshold
         self.data_loader = UnifiedDataLoader()
 
         # Set random seeds
@@ -145,7 +152,7 @@ class ZeroShotBenchmarkRunner:
             train_dataset: Source dataset name ("nasa", "calce", "oxford", "mit")
             test_dataset: Target dataset name for zero-shot testing
             features: List of feature column names
-            target: Target column name (default: "rul")
+            target: Evaluation target column name (default: "rul")
             save_model: Whether to save trained model weights
 
         Returns:
@@ -168,12 +175,15 @@ class ZeroShotBenchmarkRunner:
             features = self._infer_features(train_df)
             logger.info(f"Inferred features: {features}")
 
-        # Train model
-        X_train = train_df[features].values
-        y_train = train_df[target].values
+        # Train model on its declared prediction target
+        train_df, X_train, y_train, fit_kwargs = build_training_data(
+            train_df,
+            features,
+            model,
+        )
 
         t0 = time.time()
-        model.fit(X_train, y_train)
+        model.fit(X_train, y_train, **fit_kwargs)
         train_time = time.time() - t0
         logger.info(f"Training completed in {train_time:.2f}s")
 
@@ -188,22 +198,31 @@ class ZeroShotBenchmarkRunner:
             logger.info(f"Model saved to {model_path}")
 
         # Zero-shot inference (no fine-tuning on test set)
-        X_test = test_df[features].values
-        y_test = test_df[target].values
+        test_df, X_test, predict_kwargs = build_prediction_data(test_df, features)
 
         t0 = time.time()
-        mean, lower, upper = model.predict(X_test)
+        mean, lower, upper = model.predict(X_test, **predict_kwargs)
+        if len(mean) == 0:
+            raise ValueError("Model produced no predictions for zero-shot evaluation")
         infer_time = (time.time() - t0) / len(mean) * 1000  # ms per sample
         logger.info(f"Inference: {infer_time:.2f} ms/sample")
 
-        # Compute metrics
-        y_eval = y_test[-len(mean):]  # Align for sequence models
-        metrics = compute_all_metrics(y_eval, mean, lower, upper)
+        # Compute metrics on the requested evaluation target
+        y_eval, mean_eval, lower_eval, upper_eval, _ = adapt_predictions_to_target(
+            model=model,
+            test_df=test_df,
+            mean=mean,
+            lower=lower,
+            upper=upper,
+            evaluation_target=target,
+            eol_threshold=self.eol_threshold,
+        )
+        metrics = compute_all_metrics(y_eval, mean_eval, lower_eval, upper_eval)
 
         # Compute additional metrics
-        coverage_80 = self._compute_coverage(y_eval, lower, upper, alpha=0.2)
-        coverage_95 = self._compute_coverage(y_eval, lower, upper, alpha=0.05)
-        sharpe = self._compute_sharpe_ratio(y_eval, mean)
+        coverage_80 = self._compute_coverage(y_eval, lower_eval, upper_eval, alpha=0.2)
+        coverage_95 = self._compute_coverage(y_eval, lower_eval, upper_eval, alpha=0.05)
+        sharpe = self._compute_sharpe_ratio(y_eval, mean_eval)
 
         result = ZeroShotResult(
             train_dataset=train_dataset,
@@ -218,7 +237,7 @@ class ZeroShotBenchmarkRunner:
             coverage_95=coverage_95,
             sharpe_ratio=sharpe,
             inference_time_ms=infer_time,
-            n_samples=len(mean),
+            n_samples=len(mean_eval),
         )
 
         self.results.append(result)
@@ -253,7 +272,7 @@ class ZeroShotBenchmarkRunner:
             model_kwargs: Keyword arguments for model initialization
             datasets: List of dataset names to evaluate (default: ["nasa", "calce"])
             features: Feature column names
-            target: Target column name
+            target: Evaluation target column name
 
         Returns:
             DataFrame with cross-dataset results
@@ -344,7 +363,7 @@ class ZeroShotBenchmarkRunner:
         lines.append("## Executive Summary\n")
         lines.append(
             "This report evaluates **zero-shot cross-dataset generalization** "
-            "for battery RUL prediction models. Models are trained on one dataset "
+            "for battery prognostics models. Models are trained on one dataset "
             "and directly evaluated on another dataset without any fine-tuning.\n\n"
         )
 

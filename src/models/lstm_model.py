@@ -117,7 +117,8 @@ class LSTMModel(BatteryModel):
         self.scaler_std: np.ndarray | None = None
 
     def fit(self, X: np.ndarray, y: np.ndarray, **kwargs: Any) -> "LSTMModel":
-        X_seq, y_seq = self._make_sequences(X, y)
+        group_ids = kwargs.get("group_ids")
+        X_seq, y_seq = self._make_sequences(X, y, group_ids=group_ids)
         if len(X_seq) == 0:
             raise ValueError("No sequences created. Check data length vs seq_length.")
 
@@ -165,7 +166,8 @@ class LSTMModel(BatteryModel):
         if self.model is None:
             raise RuntimeError("Model not fitted.")
 
-        X_seq, _ = self._make_sequences(X, np.zeros(len(X)))
+        group_ids = kwargs.get("group_ids")
+        X_seq, _ = self._make_sequences(X, np.zeros(len(X)), group_ids=group_ids)
         if len(X_seq) == 0:
             empty = np.array([])
             return empty, empty, empty
@@ -190,16 +192,34 @@ class LSTMModel(BatteryModel):
         return mean, lower, upper
 
     def _make_sequences(
-        self, X: np.ndarray, y: np.ndarray
+        self,
+        X: np.ndarray,
+        y: np.ndarray,
+        group_ids: np.ndarray | None = None,
     ) -> tuple[np.ndarray, np.ndarray]:
         """Create sliding window sequences."""
         if len(X) <= self.seq_length:
             return np.array([]), np.array([])
 
         X_list, y_list = [], []
-        for i in range(len(X) - self.seq_length):
-            X_list.append(X[i : i + self.seq_length])
-            y_list.append(y[i + self.seq_length])
+        if group_ids is None:
+            group_ids = np.zeros(len(X), dtype=np.int64)
+
+        group_ids = np.asarray(group_ids)
+        if len(group_ids) != len(X):
+            raise ValueError("group_ids must have the same length as X")
+
+        for group_id in np.unique(group_ids):
+            mask = group_ids == group_id
+            X_group = X[mask]
+            y_group = y[mask]
+
+            if len(X_group) <= self.seq_length:
+                continue
+
+            for i in range(len(X_group) - self.seq_length):
+                X_list.append(X_group[i : i + self.seq_length])
+                y_list.append(y_group[i + self.seq_length])
 
         return np.array(X_list, dtype=np.float32), np.array(y_list, dtype=np.float32)
 
@@ -226,6 +246,7 @@ class LSTMModel(BatteryModel):
     def get_params(self) -> dict[str, Any]:
         return {
             "name": self.name,
+            "prediction_target": self.prediction_target,
             "input_dim": self.input_dim,
             "hidden_dim": self.hidden_dim,
             "num_layers": self.num_layers,

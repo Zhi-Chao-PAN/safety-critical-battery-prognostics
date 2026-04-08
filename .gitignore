@@ -40,9 +40,13 @@ venv/
 
 # Linting & Testing caches
 .pytest_cache/
+.pytest_tmp/
 .ruff_cache/
 .mypy_cache/
 htmlcov/
+.coverage
+pytest-cache-files-*/
+test_artifacts/
 
 # Temporary files
 *.tmp

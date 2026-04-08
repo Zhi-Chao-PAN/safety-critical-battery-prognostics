@@ -1,5 +1,5 @@
 """
-Abstract base class for all battery RUL prediction models.
+Abstract base class for battery prognostics models.
 
 All models implement the same interface for fair comparison:
   fit(X, y, **kwargs) -> self
@@ -15,9 +15,10 @@ import numpy as np
 
 
 class BatteryModel(ABC):
-    """Unified interface for all battery RUL models."""
+    """Unified interface for battery prognostics models."""
 
     name: str = "base"
+    prediction_target: str = "rul"
 
     @abstractmethod
     def fit(self, X: np.ndarray, y: np.ndarray, **kwargs: Any) -> "BatteryModel":
@@ -68,7 +69,7 @@ class BatteryModel(ABC):
 
     def get_params(self) -> dict[str, Any]:
         """Return model hyperparameters for logging."""
-        return {"name": self.name}
+        return {"name": self.name, "prediction_target": self.prediction_target}
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(name={self.name})"

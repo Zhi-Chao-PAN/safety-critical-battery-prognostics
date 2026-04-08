@@ -34,7 +34,8 @@ The primary safety goals for the prognostics engine:
 
 ### 3.2 Robustness Testing (Level 2)
 - Gaussian noise injection (σ=0.5, 50% contamination) on 6 real CALCE battery cells.
-- Cross-cell generalization via Leave-One-Group-Out cross-validation.
+- Same-cell noise robustness validation: each model is trained on a clean cell trajectory and evaluated on a noisy version of that same trajectory.
+- LOGO cross-cell robustness is implemented as a separate protocol (`scripts/validate_real_data_logo.py`) and should be treated as distinct evidence once results are generated.
 - **Limitation**: Impulse noise, periodic interference, and sensor bias are not yet covered (documented in paper Future Work).
 
 ### 3.3 Target Performance (Level 3)

@@ -64,6 +64,7 @@ class ChronosZeroShotModel(BatteryModel):
     """
 
     name: str = "chronos_zero_shot"
+    prediction_target: str = "capacity"
 
     def __init__(
         self,

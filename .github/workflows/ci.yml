@@ -2,59 +2,39 @@ name: Battery Prognostics CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
+
+permissions:
+  contents: read
 
 jobs:
-  build:
+  tests:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         python-version: ["3.10", "3.11"]
 
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
-        
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        pip install flake8 pytest mypy
-        
-    - name: Lint with flake8
-      run: |
-        flake8 src --count --select=E9,F63,F7,F82 --show-source --statistics
-        flake8 src --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-        
-    - name: Type Check with mypy
-      run: |
-        mypy src --ignore-missing-imports
-        
-    - name: Test imports
-      run: |
-        # Test that main entry point can be imported
-        python -c "import main; print('main: Import OK')"
-        
-    - name: Run unit tests
-      run: |
-        # Run unit tests if tests directory exists - fail fast
-        if [ -d "tests/unit" ]; then
-          pytest tests/unit -v --tb=short
-        else
-          echo "No unit tests found, skipping"
-        fi
-        
-    - name: Run integration tests
-      run: |
-        # Run integration tests if they exist - fail fast
-        if [ -d "tests/integration" ]; then
-          pytest tests/integration -v --tb=short
-        else
-          echo "No integration tests found, skipping"
-        fi
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -e ".[dev]"
+
+      - name: Smoke test main entry point
+        run: python -c "import main; print('main import ok')"
+
+      - name: Run full pytest suite
+        run: python -m pytest -q

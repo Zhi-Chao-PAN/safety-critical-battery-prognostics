@@ -1,5 +1,11 @@
 # Adaptive Physics-Informed Neural Networks with Micro-Macro Time-Scale Decoupling for Battery Remaining Useful Life Prediction
 
+> [!WARNING]
+> Historical draft. This archive keeps earlier manuscript wording for traceability.
+> Same-cell and cross-cell evidence should be interpreted using the active
+> repository docs, and deprecated `target="rul"` PINN examples should not be
+> copied into current experiments.
+
 ## Abstract
 
 Accurate prediction of Remaining Useful Life (RUL) for lithium-ion batteries remains a critical challenge in safety-critical applications such as electric vehicles and grid-scale energy storage. Traditional purely data-driven approaches often fail to generalize under scarce data regimes and lack physical interpretability, while conventional physics-based models suffer from computational inefficiency and inability to capture complex degradation dynamics. 
@@ -433,11 +439,11 @@ To quantify each layer's contribution, we conduct a controlled 5-variant ablatio
 2. **Clamping is the accuracy layer**: V1→V2 reduces RMSE by 77% (3.348→0.759) by preventing NN residual explosions.
 3. **Combined is optimal**: V4 achieves both 0.00% VR and the lowest RMSE (0.323), demonstrating the layers are **complementary and non-redundant**.
 
-### G. Real-World Cross-Cell Generalization
+### G. Real-World Same-Cell Noise Robustness
 
-Critically, we validate the physics shield on **6 real CALCE CS2-series lithium-ion batteries** spanning 774–1,076 cycles, each with distinct degradation profiles. The defense hyperparameters are **not retuned**—we use the identical configuration from synthetic experiments.
+Critically, we validate the physics shield on **6 real CALCE CS2-series lithium-ion batteries** spanning 774–1,076 cycles, each with distinct degradation profiles. Each model is trained on a clean trajectory and evaluated on a noisy version of that same trajectory. The defense hyperparameters are **not retuned**—we use the identical configuration from synthetic experiments.
 
-**TABLE IX: Cross-Cell CALCE Validation (50% Noise, No Retuning)**
+**TABLE IX: Same-Cell CALCE Noise Validation (50% Noise, No Retuning)**
 
 | Cell | Cycles | PINN VR | LSTM VR | PINN RMSE | LSTM RMSE |
 |------|--------|---------|---------|-----------|----------|
@@ -555,13 +561,13 @@ From a functional safety perspective, the demonstrated 0.00% VR across six real 
 | >80% (Early) | Abundant | LSTM + Post-processing | ≤5% | Strict | Sufficient training data; post-processing provides adequate safety |
 | 60–80% (Mid) | Moderate | PINN with Full Defense | 0% | Moderate | Accelerated degradation requires physics-based guarantees |
 | <60% (Late) | Scarce | PINN + UQ Alert | 0% | Relaxed | Safety-critical regime; consequences far outweigh convenience |
-| Cross-Battery | Zero-shot | PINN Only | 0% | Relaxed | Physics constraints provide the only reliable prior |
+| Cross-Battery | Future work | Conservative fallback only | 0% | Relaxed | Same-cell noise robustness is validated; true cross-battery evidence still requires dedicated LOGO evaluation |
 
 ### B. Analysis of the Accuracy-Safety Trade-off
 
 The observation that APINN-TSD exhibits higher RMSE compared to data-driven baselines requires careful interpretation—it is not a "prediction accuracy loss" but rather the cost of imposing physics-based inductive bias on the neural network's hypothesis space. The physics-informed loss term competes with the data-fitting loss for the network's limited capacity, and the optimal balance inevitably sacrifices some data-fitting fidelity to achieve physical consistency.
 
-Our fairness experiments reveal a critical nuance: post-hoc safety enforcement can bring all baseline models to 0% VR on synthetic data, but with dramatically varying accuracy costs. TCN suffers a +35.8% RMSE increase, while LSTM experiences a −22.3% RMSE improvement. This architecture-dependent variability demonstrates that post-hoc safety measures alone cannot guarantee a stable accuracy-safety trade-off. The true value of the integrated physics-informed approach lies in its zero-shot generalization to real CALCE batteries without hyperparameter adjustment—a fundamental advantage over post-hoc correction methods that require retraining or threshold tuning for each deployment scenario.
+Our fairness experiments reveal a critical nuance: post-hoc safety enforcement can bring all baseline models to 0% VR on synthetic data, but with dramatically varying accuracy costs. TCN suffers a +35.8% RMSE increase, while LSTM experiences a −22.3% RMSE improvement. This architecture-dependent variability demonstrates that post-hoc safety measures alone cannot guarantee a stable accuracy-safety trade-off. On real CALCE batteries, the current evidence supports strong same-cell noise robustness without hyperparameter adjustment; a true zero-shot cross-cell claim still requires dedicated LOGO-style evaluation.
 
 This distinction between defense-in-depth (integrating physics during training) and post-hoc safety enforcement (applying corrections after prediction) is analogous to the difference between using fire-resistant materials during building construction versus installing sprinkler systems in an existing structure. APINN-TSD's three-layer defense addresses safety at the architectural level—constraining the model's hypothesis space during training—rather than relying solely on post-hoc corrections.
 
@@ -609,7 +615,7 @@ This paper presented **APINN-TSD** (Adaptive Physics-Informed Neural Network wit
 
 6. **Statistical Significance**: Five-seed significance testing yields Welch's t-test p = 0.0010 and Glass's Δ ≈ 23.6, providing 99.9% confidence that APINN-TSD's robustness advantage is not attributable to random chance.
 
-7. **Real-World Generalization**: Validated on 6 real CALCE CS2-series batteries (774–1,076 cycles) without hyperparameter retuning, achieving 0.00% violation rate on all cells—confirming zero-shot transferability of the physics defense from synthetic to real battery data.
+7. **Real-World Noise Robustness**: Validated on 6 real CALCE CS2-series batteries (774–1,076 cycles) without hyperparameter retuning, achieving 0.00% violation rate on all cells in same-cell noise robustness tests—confirming the physics defense transfers from synthetic signals to real battery trajectories under severe sensor corruption.
 
 Experimental validation across 11 evaluation dimensions and 15 tables demonstrated state-of-the-art performance: RMSE 0.036 (16.3% improvement over standard PINN), ECE 0.061 (29.9% calibration improvement), deterministic 0.00% physical violation guarantee, and a principled accuracy-safety trade-off framework (Table XV) to guide BMS deployment decisions across different SOH regimes.
 
@@ -718,7 +724,7 @@ Experimental validation across 11 evaluation dimensions and 15 tables demonstrat
 - **Length**: ~12 pages (double-column equivalent)
 - **Sections**: Abstract, I-VII, 46 References, 15 Tables
 - **Key Innovations**: Time-Scale Decoupling, Adaptive Loss Weighting, Three-Layer Physics Defense, Batched MC Dropout, AMP Training
-- **Results**: RMSE 0.036 (16.3% improvement), ECE 0.061, 0.00% VR under 50% noise, zero-shot generalization on 6 real CALCE batteries, p=0.0010 statistical significance
+- **Results**: RMSE 0.036 (16.3% improvement), ECE 0.061, 0.00% VR under 50% noise, same-cell noise robustness on 6 real CALCE batteries, p=0.0010 statistical significance
 
 ---
 

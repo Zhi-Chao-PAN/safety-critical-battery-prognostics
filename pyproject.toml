@@ -54,7 +54,10 @@ build-backend = "setuptools.backends._legacy:_Backend"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 norecursedirs = ["sandbox", "data", "logs", "checkpoints", "docs", ".git", ".github"]
-addopts = "-v --tb=short"
+addopts = "-v --tb=short -p no:cacheprovider"
+markers = [
+    "unit: fast unit-level checks for core components",
+]
 
 [tool.ruff]
 target-version = "py310"

@@ -1,21 +1,29 @@
 """Evaluation utilities."""
 
 from .benchmark import BenchmarkRunner
-from .capacity_to_rul import CapacityToRULMapper
-from .hyperparam_search import HyperparamSearch
+from .capacity_to_rul import (
+    RULPrediction,
+    capacity_trajectory_to_rul,
+    capacity_trajectory_to_rul_series,
+    compute_rul_metrics,
+    evaluate_chronos_rul,
+    find_eol_crossing,
+    find_eol_crossing_cycle,
+)
 from .zero_shot_benchmark import (
     ZeroShotBenchmarkRunner,
     ZeroShotResult,
-    run_single_evaluation,
-    run_full_matrix_evaluation,
 )
 
 __all__ = [
     "BenchmarkRunner",
-    "CapacityToRULMapper",
-    "HyperparamSearch",
+    "RULPrediction",
+    "capacity_trajectory_to_rul",
+    "capacity_trajectory_to_rul_series",
+    "compute_rul_metrics",
+    "evaluate_chronos_rul",
+    "find_eol_crossing",
+    "find_eol_crossing_cycle",
     "ZeroShotBenchmarkRunner",
     "ZeroShotResult",
-    "run_single_evaluation",
-    "run_full_matrix_evaluation",
 ]

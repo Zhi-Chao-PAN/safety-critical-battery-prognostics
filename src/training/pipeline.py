@@ -63,6 +63,12 @@ class TrainingPipeline:
         except ImportError:
             pass
 
+        if getattr(model, "name", None) == "pinn" and self.target != "capacity":
+            raise ValueError(
+                "PINNModel requires target='capacity' because its physics prior models "
+                "capacity fade, not RUL. Override the pipeline target before training."
+            )
+
         all_metrics = []
         best_model = None
         best_rmse = float("inf")
