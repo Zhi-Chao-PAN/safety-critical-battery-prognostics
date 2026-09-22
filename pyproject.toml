@@ -16,6 +16,8 @@ dependencies = [
     "seaborn>=0.12.0",
     "scikit-learn>=1.2.0",
     "joblib>=1.2.0",
+    "pydantic>=2,<3",
+    "pyyaml>=6.0.0",
 ]
 
 [project.optional-dependencies]
