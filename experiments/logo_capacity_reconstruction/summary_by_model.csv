@@ -1,0 +1,3 @@
+model,rmse_mean,rmse_std_over_seed_cell,violation_rate_mean,violation_rate_std_over_seed_cell,folds
+lstm,0.2220914494799364,0.03524052432735028,0.0,0.0,18
+pinn,0.9813939068223951,1.6639608866709508,0.0,0.0,18

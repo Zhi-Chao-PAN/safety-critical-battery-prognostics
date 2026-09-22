@@ -1,7 +1,7 @@
 <div align="center">
 
-# 🔋 微-宏时间尺度解耦的电池寿命预测系统
-**Micro-Macro Time-Scale Decoupling for Battery RUL Prediction**
+# 🔋 电池容量建模研究审计
+**有边界的合成基准与留一电芯容量重建实验**
 
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-red.svg?logo=pytorch)](https://pytorch.org/)
 [![CI](https://github.com/Zhi-Chao-PAN/safety-critical-battery-prognostics/actions/workflows/ci.yml/badge.svg)](https://github.com/Zhi-Chao-PAN/safety-critical-battery-prognostics/actions/workflows/ci.yml)
@@ -9,13 +9,13 @@
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg?logo=python)](https://python.org/)
 [![GitHub stars](https://img.shields.io/github/stars/Zhi-Chao-PAN/safety-critical-battery-prognostics?style=social)](https://github.com/Zhi-Chao-PAN/safety-critical-battery-prognostics)
 
-*面向学术研究与工业BMS边缘部署的电池寿命预测系统*
+*用于容量空间模型、单调后处理与可复核负结果的研究代码*
 
 </div>
 
 ---
 
-> 说明：当前仓库中关于实验口径、证据边界与对外结论的最新版本，以英文 [README.md](README.md)、[docs/comprehensive_experimental_results.md](docs/comprehensive_experimental_results.md) 与 [docs/claim_evidence_matrix.md](docs/claim_evidence_matrix.md) 为准。本文档保留为中文快速导读。
+> 说明：当前实验口径以英文 [README.md](README.md)、[三训练种子复核](experiments/logo_capacity_reconstruction/README.md) 与 [证据矩阵](docs/claim_evidence_matrix.md) 为准。旧报告保留作历史记录，可能含有更强的早期表述。
 
 ---
 
@@ -25,7 +25,9 @@
 
 ## 📚 项目概述
 
-本项目探索锂离子电池剩余使用寿命（RUL）预测的新方法，核心思路是通过**微-宏时间尺度解耦**来结合物理信息与数据驱动方法。
+本项目探索容量空间中的物理信息模型和数据驱动模型。当前真实电芯协议把已经观测到的带噪容量轨迹作为输入，因此评估的是容量重建/去噪，不是未来容量或 RUL 外推，也不构成部署安全证明。
+
+最新的 3 个训练种子 × 6 个留一电芯复核得到：PINN 在 18 个 seed-fold 上的 RMSE 为 0.9814 ± 1.6640 Ah，LSTM 为 0.2221 ± 0.0352 Ah。两者的零上升违例都出现在共享 running-min 后处理之后。这组结果不支持 PINN 在该协议上优于 LSTM，也不支持把零违例解释为 PINN 独有的安全优势。
 
 ### 主要特点
 - 物理信息神经网络（PINNs）与深度学习的混合架构

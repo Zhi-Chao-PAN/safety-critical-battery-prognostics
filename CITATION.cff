@@ -4,13 +4,13 @@ type: software
 authors:
 - family-names: "Pan"
   given-names: "Zhi-Chao"
-title: "Physics-Shielded Battery Prognostics: Micro-Macro Time-Scale Decoupled PINN with Three-Layer Defense"
+title: "Battery Capacity Modeling Research Audit"
 version: 2.0.0
 date-released: 2026-04-08
 url: "https://github.com/Zhi-Chao-PAN/safety-critical-battery-prognostics"
 repository-code: "https://github.com/Zhi-Chao-PAN/safety-critical-battery-prognostics"
 license: "MIT"
-abstract: "A safety-critical battery prognostics repository centered on a three-layer physics defense, bounded real-data reporting, and reproducible benchmark scripts for synthetic, same-cell, and LOGO evaluation protocols."
+abstract: "Research code and bounded evidence for synthetic robustness benchmarks and held-out-cell capacity reconstruction. The real-cell experiments are not future-capacity or RUL forecasts and do not establish deployment safety."
 keywords:
   - "battery-prognostics"
   - "prognostics-health-management"
@@ -18,4 +18,4 @@ keywords:
   - "uncertainty-quantification"
   - "physics-informed-neural-networks"
   - "battery-management-systems"
-  - "safety-critical-ml"
+  - "reproducibility-audit"

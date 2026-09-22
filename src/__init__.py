@@ -1,6 +1,3 @@
-"""
-Safety-Critical Battery Prognostics
-Uncertainty-Aware Edge-Deployable Battery Health Management System
-"""
+"""Battery capacity modeling research code and bounded reconstruction audits."""
 
 __version__ = "2.0.0"

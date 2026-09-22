@@ -6,7 +6,7 @@ dist/
 build/
 *.egg
 
-# Data - keep sample data but ignore large raw datasets
+# Data - do not add third-party raw or derived cell-level records
 data/battery_data/*.mat
 data/raw/
 data/external/
@@ -16,6 +16,8 @@ autodl-tmp/
 results/
 checkpoints/
 logs/
+experiments/**/local_runs/
+experiments/**/per_point_predictions.csv
 *.onnx
 *.pt
 *.pth

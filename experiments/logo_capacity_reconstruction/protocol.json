@@ -1,0 +1,19 @@
+{
+  "source_commit": "bf53f86805ed1637b5ad1dc3d014976be71415b8",
+  "task": "LOGO held-out-cell capacity reconstruction under fixed Gaussian sensor corruption",
+  "interpretation_boundary": "The corrupted held-out capacity trajectory is an input feature. This is not future-capacity or RUL forecasting.",
+  "cells": ["CS2_33", "CS2_34", "CS2_35", "CS2_36", "CS2_37", "CS2_38"],
+  "training_seeds": [42, 123, 456],
+  "noise_seed": 42,
+  "noise_level": 0.5,
+  "postprocessing": "shared EMA(alpha=0.15), then running-minimum projection, for PINN and LSTM",
+  "data_provenance_boundary": "Repository CSV snapshots; not independently reconstructed from the original CALCE archive.",
+  "data_sha256": {
+    "CS2_33.csv": "813f09425d8dbdcb6d98da46aed1c650c4062de2e08d50ace5d3c7f48df0b96a",
+    "CS2_34.csv": "be0fa98ee013c5864e0f0c67d70aa2c197ed7017e6baa8b7324db64688113f0b",
+    "CS2_35.csv": "b87d4820a4b21cf721919f166c64d8ffaaf9687253857978268b12916abca962",
+    "CS2_36.csv": "e1f4f10fff5b72982241e7f14a7664f0c2e7c22e094b8dca063f4b7988e94b24",
+    "CS2_37.csv": "dc817189fafd5bfe872818ca71de64afa5ce910ab4473343481f5231a962d380",
+    "CS2_38.csv": "13de9a63cacd95189bbaf27b057ba58a87238f24c79088acb539b9d51bc2f165"
+  }
+}
