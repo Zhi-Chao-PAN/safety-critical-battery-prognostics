@@ -1,0 +1,14 @@
+{
+  "status": "VERIFIED",
+  "public_metric_rows": 36,
+  "public_summaries_recomputed_from_fold_rows": true,
+  "detailed_local_runs": 3,
+  "detailed_local_metric_rows": 36,
+  "detailed_local_prediction_groups": 36,
+  "detailed_local_hashes_checked": true,
+  "detailed_local_metrics_recomputed_from_points": true,
+  "point_predictions_published": false,
+  "per_fold_metrics_sha256": "70f6233ed7fef00612be60f9d6eb4f3eef95f97b7eaa9386d77b1e8c0110bb84",
+  "summary_by_seed_sha256": "013e52d0cc4e125cfa8c4e004563b45fe85be23efe1caf0e6bc30748a46106ed",
+  "summary_by_model_sha256": "1e0f94c31ffd410ad27f6a3ab2432a93ab33a75ead45ae25df21a61a5787ae0b"
+}

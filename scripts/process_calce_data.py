@@ -18,7 +18,7 @@ Output Schema (per battery CSV):
 
 Usage:
     python scripts/process_calce_data.py
-    python scripts/process_calce_data.py --zip-dir C:\\Users\\22304\\Desktop --output-dir data/calce
+    python scripts/process_calce_data.py --zip-dir /path/to/calce-archives --output-dir /path/to/derived-data
 """
 
 import argparse

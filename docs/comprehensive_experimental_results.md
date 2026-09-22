@@ -1,5 +1,7 @@
 # Comprehensive Experimental Results
 
+> **Historical benchmark compendium.** Some sections below retain earlier, stronger wording. Current public claim boundaries are defined by the root README, `docs/claim_evidence_matrix.md`, and `experiments/logo_capacity_reconstruction/README.md`. The real-cell protocols use observed capacity as an input and therefore do not establish future-capacity/RUL forecasting or deployment safety.
+
 ## 1. Dataset Overview
 
 This project evaluates the proposed micro-macro decoupled architecture on two widely used battery aging datasets:

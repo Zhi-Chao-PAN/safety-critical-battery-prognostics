@@ -1,7 +1,7 @@
 [project]
 name = "safety-critical-battery-prognostics"
 version = "2.0.0"
-description = "Uncertainty-Aware Edge-Deployable Battery Health Management System"
+description = "Battery capacity modeling research code and bounded reconstruction audits"
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.10"
@@ -16,6 +16,8 @@ dependencies = [
     "seaborn>=0.12.0",
     "scikit-learn>=1.2.0",
     "joblib>=1.2.0",
+    "pydantic>=2,<3",
+    "pyyaml>=6.0.0",
 ]
 
 [project.optional-dependencies]
@@ -49,7 +51,7 @@ fmea = [
 
 [build-system]
 requires = ["setuptools>=68.0"]
-build-backend = "setuptools.backends._legacy:_Backend"
+build-backend = "setuptools.build_meta"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
