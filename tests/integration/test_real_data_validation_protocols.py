@@ -110,13 +110,13 @@ def test_readme_real_data_sections_match_current_evidence_state():
     claim_matrix = (ROOT / "docs" / "claim_evidence_matrix.md").read_text(encoding="utf-8")
 
     assert "### Same-Cell Noise Robustness" in readme
-    assert "### LOGO Cross-Cell Validation" in readme
+    assert "### LOGO held-out-cell reconstruction" in readme
     assert "### Multi-Seed Corruption Stress Suite" in readme
     assert "docs/comprehensive_experimental_results.md" in readme
     assert "docs/claim_evidence_matrix.md" in readme
 
     same_cell_section = readme.split("### Same-Cell Noise Robustness", 1)[1].split(
-        "### LOGO Cross-Cell Validation", 1
+        "### LOGO held-out-cell reconstruction", 1
     )[0]
     assert "cross-cell generalization" not in same_cell_section.lower()
     assert "47.97%" not in same_cell_section
@@ -147,8 +147,9 @@ def test_readme_reproducibility_distinguishes_same_cell_logo_and_stress_suite_ou
     assert "real_data_logo_validation_report.md" in readme
     assert "real_data_stress_suite_report.md" in readme
     assert "real_data_stress_suite_summary.csv" in readme
-    assert "lags lstm on rmse" in readme.lower()
-    assert "held-out cells, bounded conclusion" in readme.lower()
+    assert "pinn trails lstm on rmse" in readme.lower()
+    assert "does not test future forecasting" in readme.lower()
+    assert "experiments/logo_capacity_reconstruction" in readme
 
     logo_figure = ROOT / "robustness_results" / "real_data_logo_validation.png"
     logo_report = ROOT / "robustness_results" / "real_data_logo_validation_report.md"
