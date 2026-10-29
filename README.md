@@ -42,7 +42,7 @@ The inherited pipeline combines a training penalty, residual clamping, and a det
 ├─────────────────────────────────────────────────────────┤
 │  Layer 2: Residual Clamping                             │
 │  → Bounds NN residual to training-time observed range   │
-│  → Prevents OOD explosion (RMSE ↓77%)                  │
+│  → Bounds residuals; effect depends on the tested protocol                  │
 ├─────────────────────────────────────────────────────────┤
 │  Layer 3: Monotonic Projection                          │
 │  → EMA smoothing (α=0.15) + running-minimum             │
@@ -50,33 +50,7 @@ The inherited pipeline combines a training penalty, residual clamping, and a det
 └─────────────────────────────────────────────────────────┘
 ```
 
-### Synthetic ablation retained from the original benchmark
-
-The following single-seed synthetic ablation is kept as a benchmark result, with no claim of real-world generalization:
-
-| Defense Configuration | RMSE (Ah) | Violation Rate | Role |
-|----------------------|-----------|---------------|------|
-| No Defense | 1.748 | 50.75% | Baseline |
-| + Constraint Training | 3.348 | 48.24% | Weak regularization |
-| + Residual Clamping | **0.759** | 48.74% | **Accuracy** (RMSE ↓77%) |
-| + Monotonic Projection | 2.589 | **0.00%** | Deterministic output constraint |
-| **Full pipeline** | **0.323** | **0.00%** | Reported synthetic result |
-
-> This table alone does not establish necessity across seeds, cells, datasets, or deployment conditions.
-
----
-
 ## 📊 Experimental Results
-
-### Robustness: PINN vs LSTM under 50% Gaussian Noise
-
-These are retained single-environment synthetic benchmark measurements and were not revalidated by the training-seed audit:
-
-| Metric | PINN (Ours) | LSTM Baseline |
-|--------|:-----------:|:-------------:|
-| Physical Violation Rate | **0.00%** ✅ | 18.55% ❌ |
-| Inference Latency | **11 ms** ⚡ | 2,230 ms |
-| Speed Advantage | **203× faster** | — |
 
 ### Same-Cell Noise Robustness (Fairness-Matched)
 
@@ -125,6 +99,39 @@ The repository now also includes a seeded stress-suite report across 5 corruptio
 
 See [real_data_stress_suite_report.md](robustness_results/real_data_stress_suite_report.md) for the per-corruption `mean ± std` tables and hardest-fold breakdowns.
 
+## Historical synthetic and timing records
+
+<details>
+<summary>Earlier synthetic ablations and timing measurements (not current real-data conclusions)</summary>
+
+These records are retained for traceability. They were not revalidated by the
+three-training-seed held-out-cell audit and do not establish deployment safety,
+forecasting performance, or a general speed advantage.
+
+### Synthetic ablation retained from the original benchmark
+
+The following single-seed synthetic ablation is kept as a benchmark result, with no claim of real-world generalization:
+
+| Defense Configuration | RMSE (Ah) | Violation Rate | Role |
+|----------------------|-----------|---------------|------|
+| No Defense | 1.748 | 50.75% | Baseline |
+| + Constraint Training | 3.348 | 48.24% | Weak regularization |
+| + Residual Clamping | **0.759** | 48.74% | **Accuracy** (RMSE ↓77%) |
+| + Monotonic Projection | 2.589 | **0.00%** | Deterministic output constraint |
+| **Full pipeline** | **0.323** | **0.00%** | Reported synthetic result |
+
+> This table alone does not establish necessity across seeds, cells, datasets, or deployment conditions.
+
+### Robustness: PINN vs LSTM under 50% Gaussian Noise
+
+These are retained single-environment synthetic benchmark measurements and were not revalidated by the training-seed audit:
+
+| Metric | PINN (Ours) | LSTM Baseline |
+|--------|:-----------:|:-------------:|
+| Physical Violation Rate | **0.00%** ✅ | 18.55% ❌ |
+| Inference Latency | **11 ms** ⚡ | 2,230 ms |
+| Speed Advantage | 203× (historical single-environment measurement) | — |
+
 ### Earlier computational measurements
 
 These values come from earlier repository reports and are environment-specific; they are not deployment qualification evidence:
@@ -136,7 +143,7 @@ These values come from earlier repository reports and are environment-specific; 
 | AMP Training Speedup | 2× (Tensor Core) |
 | MC Dropout Speedup | 100× (Batched) |
 
----
+</details>
 
 ## 🏗️ Architecture
 
